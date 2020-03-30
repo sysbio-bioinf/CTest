@@ -436,7 +436,6 @@ As specified in the initialisation step, your admin user can create other users 
 Normal user accounts can create patient test tracks and also search the database for existing patients by their order number. 
 
 ### User
-**TODO: LINK ZU GITHUB IMAGES EINBAUEN**
 
 #### Adding new test tracks
 Staff members can login with their user account via `ctest.your.domain.tld/staff`. 
