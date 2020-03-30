@@ -7,9 +7,10 @@ The primary aim of this approach was to reduce the burden of clinical staff in t
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. 
 
-Download a release version of CTest from github 
+Download a release version of CTest: 
 
-**TODO: LINK ZU GITHUB RELASE EINBAUEN**
+* [Version 0.2.0](https://github.com/sysbio-bioinf/CTest/releases/download/0.2.0/ctest-0.2.0.jar)
+
 
 ## Prerequisites
 
@@ -449,15 +450,15 @@ This tracking ID can be used by testees to access their test status.
 Therefore, a testee-specific html is generated which contains a testee-specific URL and a QR code that encodes this URL. 
 A printer dialog is opened automatically to provide testees with a printout such as the following:
 
-![](https://i.imgur.com/CAzj5UH.png)
+![](doc/images/PatientInformation.png)
 
 Currently - according to German regulations - the testee can see one of two different statuses (see following screenshots) :
 
 **1. Test in progress**
- ![](https://i.imgur.com/IP3UfPz.png)
+ ![](doc/images/AnalyseLaeuft.png)
 
 **2. Test negative**
- ![](https://i.imgur.com/uXYPlTS.jpg)
+ ![](doc/images/TestNegativ.png)
 
 
 In Germany, positively tested people are called by the respective health department.
