@@ -1,0 +1,145 @@
+{% extends "templates/base.html" %}
+
+{% block header-scripts %}
+<link rel="stylesheet" type="text/css" href="{{serverRoot}}/libs/toggle-switch/toggle-switch.css">
+<link rel="stylesheet" type="text/css" href="{{serverRoot}}/libs/datatables/css/jquery.dataTables.min.css">
+{% endblock %}
+
+{% block nav-prj-create %}class="active"{% endblock %}
+
+{% block content %}
+<div class="wrapper">
+  	<div class="panel-body">
+	   <div class="container-fluid">
+	      <div class="row">
+
+			    <h3><strong>Tracking Nr.</strong></h3>
+					<p><strong>{{patient.trackingnr}}</strong></p>
+			  </div>
+			  <div class="row">
+				  <h3><strong>Status</strong></h3>
+			{% if patient.negative %}
+			<div style="padding:25px;background-color: #90ee90;">
+			<table style="width:100%;background-color:#90ee90;">
+				<tr>
+				  <td><img src="/images/FlagGermany.png" alt="Deutsch" style="height:25px;margin-top:15px;margin-right:10px;"></img></td>
+				  <td><strong>Test negativ </strong> <br> Hinweis: ein negatives Ergebnis schließt die M&#246;glichkeit einer Coronavirus-Infektion nicht vollst&#228;ndig aus (z.B. bei Probenabnahme zu fr&#252;h w&#228;hrend des Infektionsverlaufs).</td>
+				</tr>
+				<tr>
+					<td><br></td>
+					<td><br></td>
+				</tr>
+				<tr>
+				  <td><img src="/images/FlagUnionJack.png" alt="English" style="height:25px;width:37.75px;margin-top:5px;"></img></td>
+				  <td><strong>Result negative</strong> <br> Information: a negative test result does not entirely exclude a coronavirus infection (e.g. in case samples were obtained too early after infection).</td>
+				</tr>
+				<tr>
+					<td><br></td>
+					<td><br></td>
+				</tr>
+				<tr>
+				  <td><img src="/images/FlagFrance.png" alt="Fran&ccedil;ais" style="height:25px;margin-top:5px;"></img></td>
+				  <td><strong>Test n&#233;gatif</strong> <br> Remarque: un r&#233;sultat n&#233;gatif n'&#233;xclut pas enti&#232;rement la possibilit&#233; d'une infection avec le coronavirus (par example, si des &#233;chantillons sont pr&#233;lev&#233;s trop t&#244;t au cours de l'infection). </td>
+				</tr>
+				<tr>
+					<td><br></td>
+					<td><br></td>
+				</tr>
+				<tr>
+					<td><img src="/images/FlagTurkey.png" alt="T&uuml;rk" style="height:25px;margin-top:5px;"></img></td>
+					<td><strong> Negatif test </strong> <br> Not: negatif bir sonu&#231;, koronavir&#252;s enfeksiyonu olas&#305;l&#305;&#287;&#305;n&#305; tamamen d&#305;&#351;lamaz (&#246;rne&#287;in, enfeksiyon s&#305;ras&#305;nda &#246;rnek &#231;ok erken al&#305;n&#305;rsa).</td>
+				</tr>
+				<tr>
+					<td><br></td>
+					<td><br></td>
+				</tr>
+				<tr>
+					<td><img src="/images/FlagItaly.png" alt="Italiano" style="height:25px;margin-top:5px;"></img></td>
+					<td><strong>Test negativo </strong><br> Nota: un risultato negativo non esclude completamente la possibilità di un'infezione da coronavirus (ad es. Se il campione viene prelevato troppo presto nel corso dell'infezione).</td>
+				 </tr>
+				 <tr>
+					<td><br></td>
+					<td><br></td>
+				</tr>
+				<tr>
+					<td><img src="/images/FlagRussia.png" alt="&#1088;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;" style="height:25px;margin-top:5px;"></img></td>
+					<td><strong> &#1058;&#1077;&#1089;&#1090; &#1086;&#1090;&#1088;&#1080;&#1094;&#1072;&#1090;&#1077;&#1083;&#1100;&#1085;&#1099;&#1081;</strong> <br> &#1055;&#1088;&#1080;&#1084;&#1077;&#1095;&#1072;&#1085;&#1080;&#1077;: &#1086;&#1090;&#1088;&#1080;&#1094;&#1072;&#1090;&#1077;&#1083;&#1100;&#1085;&#1099;&#1081; &#1088;&#1077;&#1079;&#1091;&#1083;&#1100;&#1090;&#1072;&#1090; &#1085;&#1077; &#1087;&#1086;&#1083;&#1085;&#1086;&#1089;&#1090;&#1100;&#1102; &#1080;&#1089;&#1082;&#1083;&#1102;&#1095;&#1072;&#1077;&#1090; &#1074;&#1086;&#1079;&#1084;&#1086;&#1078;&#1085;&#1086;&#1089;&#1090;&#1100; &#1082;&#1086;&#1088;&#1086;&#1085;&#1072;&#1074;&#1080;&#1088;&#1091;&#1089;&#1085;&#1086;&#1081; &#1080;&#1085;&#1092;&#1077;&#1082;&#1094;&#1080;&#1080; (&#1085;&#1072;&#1087;&#1088;&#1080;&#1084;&#1077;&#1088;, &#1077;&#1089;&#1083;&#1080; &#1086;&#1073;&#1088;&#1072;&#1079;&#1077;&#1094; &#1073;&#1099;&#1083; &#1074;&#1079;&#1103;&#1090; &#1089;&#1083;&#1080;&#1096;&#1082;&#1086;&#1084; &#1088;&#1072;&#1085;&#1086; &#1074; &#1090;&#1077;&#1095;&#1077;&#1085;&#1080;&#1077; &#1080;&#1085;&#1092;&#1077;&#1082;&#1094;&#1080;&#1080;).</td>
+				 </tr>
+				 <tr>
+					<td><br></td>
+					<td><br></td>
+				</tr>
+				<tr>
+					<td><img src="/images/FlagChina.png" alt="&#20013;&#22269;&#20154;" style="height:25px;margin-top:5px;"></img></td>
+					<td><strong> &#27979;&#35797;&#32467;&#26524;&#38452;&#24615;</strong> <br> &#27880;&#24847;&#65306;&#38452;&#24615;&#32467;&#26524;&#24182;&#26410;&#23436;&#20840;&#25490;&#38500;&#20896;&#29366;&#30149;&#27602;&#24863;&#26579;&#30340;&#21487;&#33021;&#24615;&#65288;&#20363;&#22914;&#65292;&#22312;&#24863;&#26579;&#36807;&#31243;&#20013;&#36807;&#26089;&#21462;&#26679;&#65289;&#12290;</td>
+				  </tr>
+				  <tr>
+					<td><br></td>
+					<td><br></td>
+				</tr>
+				  <tr>
+					<td><img src="/images/FlagTunesia.png" alt="&#1593;&#1585;&#1576;&#1610;" style="height:25px;margin-top:5px;"></img></td>
+					<td> <strong> <bdo dir="rtl">&#1575;&#1604;&#1606;&#1578;&#1610;&#1580;&#1577; &#1587;&#1604;&#1576;&#1610;&#1577;</bdo></strong> <br> <bdo dir="rtl"> &#1605;&#1604;&#1575;&#1581;&#1592;&#1577;: &#1575;&#1604;&#1606;&#1578;&#1610;&#1580;&#1577; &#1575;&#1604;&#1587;&#1604;&#1576;&#1610;&#1577; &#1604;&#1575; &#1578;&#1604;&#1594;&#1610; &#1578;&#1605;&#1575;&#1605;&#1611;&#1575; &#1575;&#1581;&#1578;&#1605;&#1575;&#1604;&#1610;&#1577; &#1575;&#1604;&#1573;&#1589;&#1575;&#1576;&#1577; &#1576;&#1575;&#1604;&#1601;&#1610;&#1585;&#1608;&#1587; &#1603;&#1608;&#1585;&#1608;&#1606;&#1575; (&#1593;&#1604;&#1609; &#1587;&#1576;&#1610;&#1604; &#1575;&#1604;&#1605;&#1579;&#1575;&#1604; &#1573;&#1584;&#1575; &#1578;&#1605; &#1571;&#1582;&#1584; &#1575;&#1604;&#1593;&#1610;&#1606;&#1577; &#1601;&#1610; &#1608;&#1602;&#1578; &#1605;&#1576;&#1603;&#1585; &#1580;&#1583;&#1611;&#1575; &#1605;&#1606; &#1578;&#1602;&#1583;&#1605; &#1575;&#1604;&#1573;&#1589;&#1575;&#1576;&#1577;)</bdo></td>
+				</tr>
+			  </table>
+			</div>
+			{% else %}
+			<div style="padding:25px;background-color:#b2dff2;">
+			<table style="width:100%;background-color:#b2dff2;">
+				<tr>
+				  <td><img src="/images/FlagGermany.png" alt="Deutsch" style="height:25px;margin-top:5px;"></img></td>
+				  <td>Analyse l&#228;uft</td>
+				</tr>
+				<tr>
+				  <td><img src="/images/FlagUnionJack.png" alt="English" style="height:25px;width:37.75px;margin-top:5px;"></img></td>
+				  <td>Test in progress</td>
+				</tr>
+				<tr>
+				  <td><img src="/images/FlagFrance.png" alt="Fran&ccedil;ais" style="height:25px;margin-top:5px;"></img></td>
+				  <td>Analyse en cours</td>
+				</tr>
+				<tr>
+					<td><img src="/images/FlagTurkey.png" alt="T&uuml;rk" style="height:25px;margin-top:5px;"></img></td>
+					<td>Analiz devam ediyor</td>
+				  </tr>
+				  <tr>
+					<td><img src="/images/FlagItaly.png" alt="Italiano" style="height:25px;margin-top:5px;"></img></td>
+					<td>Analisi in corso</td>
+				  </tr>
+				  <tr>
+					<td><img src="/images/FlagRussia.png" alt="&#1088;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;" style="height:25px;margin-top:5px;"></img></td>
+					<td>&#1040;&#1085;&#1072;&#1083;&#1080;&#1079; &#1074; &#1086;&#1073;&#1088;&#1072;&#1073;&#1086;&#1090;&#1082;&#1080;</td>
+				  </tr>
+				  <tr>
+					<td><img src="/images/FlagChina.png" alt="&#20013;&#22269;&#20154;" style="height:25px;margin-top:5px;"></img></td>
+					<td>&#36827;&#34892;&#20013;&#30340;&#20998;&#26512;</td>
+				  </tr>
+				  <tr>
+					<td><img src="/images/FlagTunesia.png" alt="&#1593;&#1585;&#1576;&#1610;" style="height:25px;margin-top:5px;"></img></td>
+				   <td><bdo dir="rtl"> &#1608;&#1604;&#1575; &#1610;&#1586;&#1575;&#1604; &#1575;&#1604;&#1578;&#1581;&#1604;&#1610;&#1604; &#1605;&#1587;&#1578;&#1605;&#1585;&#1577; </bdo></td>
+				</tr>
+			  </table>
+			</div>
+			{% endif %}
+
+
+
+		 	 </div>
+		</div>
+ </div>
+</div>
+{% endblock %}
+
+{% block footer-scripts %}
+<script>
+<!--
+var serverRoot = '{{serverRoot}}';
+-->
+</script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/bootstrap/js/validator.min.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/datatables/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/datatables-bootstrap/js/dataTables.bootstrap.min.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/jquery/jquery.serialize-object.min.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/jquery/mustache.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/js/createProject.js"></script>
+{% endblock %}

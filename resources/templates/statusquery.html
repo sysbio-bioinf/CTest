@@ -1,0 +1,88 @@
+{% extends "templates/base.html" %}
+
+{% block header-scripts %}
+<link rel="stylesheet" type="text/css" href="{{serverRoot}}/libs/toggle-switch/toggle-switch.css">
+<link rel="stylesheet" type="text/css" href="{{serverRoot}}/libs/datatables/css/jquery.dataTables.min.css">
+{% endblock %}
+
+{% block nav-prj-create %}class="active"{% endblock %}
+
+{% block content %}
+<div>
+	{% if error %}
+	<div>
+		<table align="center" style="width:80%;background-color: rgb(242, 172, 172);padding:10;" >
+			<tr>
+			  <td><img src="/images/FlagGermany.png" alt="Deutsch" style="height:25px;margin-top:10px;margin-right:10px;"></img></td>
+			  <td> Fehler: ung&#252;ltige Tracking-Nummer. Bitte geben Sie ihre Tracking-Nummer in das Feld ein (siehe untenstehendes Bild).</td>
+			</tr>
+			<tr>
+			  <td><img src="/images/FlagUnionJack.png" alt="English" style="height:25px;width:37.75px;margin-top:10px;"></img></td>
+			  <td> Error: invalid tracking number. Please insert your tracking number in the field (see picture below).</td>
+			</tr>
+			<tr>
+			  <td><img src="/images/FlagFrance.png" alt="Fran&ccedil;ais" style="height:25px;margin-top:10px;"></img></td>
+			  <td> Erreur: le num&#233;ro de r&#233;f&#233;rence n'est pas valide. S'il vous pla&#238;t entrez votre num&#233;ro de r&#233;f&#233;rence dans le champ saisie de donn&#233;es (voir l'image plus bas).</td>
+			</tr>
+			<tr>
+				<td><img src="/images/FlagTurkey.png" alt="T&uuml;rk" style="height:25px;margin-top:10px;"></img></td>
+				<td> Hata: Referans numaras&#305; ge&#231;ersiz. L&#252;tfen giri&#351; alan&#305;na referans numaran&#305;z&#305; giriniz (a&#351;a&#287;&#305;daki resime bak&#305;niz).</td>
+			  </tr>
+			  <tr>
+				<td><img src="/images/FlagItaly.png" alt="Italiano" style="height:25px;margin-top:10px;"></img></td>
+				<td> Errore: numero di riferimento non valido. Inserire il numero corretto nell'apposito spazio (riferimento all'immagine sottostante).  </td>
+			  </tr>    
+			  <tr>
+				<td><img src="/images/FlagRussia.png" alt="&#1088;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;" style="height:25px;margin-top:10px;"></img></td>
+				<td> &#1054;&#1096;&#1080;&#1073;&#1082;&#1072;: &#1089;&#1089;&#1099;&#1083;&#1086;&#1095;&#1085;&#1099;&#1081; &#1085;&#1086;&#1084;&#1077;&#1088; &#1085;&#1077;&#1076;&#1077;&#1081;&#1089;&#1090;&#1074;&#1080;&#1090;&#1077;&#1083;&#1077;&#1085;. &#1055;&#1086;&#1078;&#1072;&#1083;&#1091;&#1081;&#1089;&#1090;&#1072;, &#1079;&#1072;&#1085;&#1077;&#1089;&#1080;&#1090;&#1077; &#1074;&#1072;&#1096; &#1089;&#1089;&#1099;&#1083;&#1086;&#1095;&#1085;&#1099;&#1081; &#1085;&#1086;&#1084;&#1077;&#1088; &#1074; &#1087;&#1086;&#1083;&#1077; &#1074;&#1074;&#1086;&#1076;&#1072; (&#1089;&#1084;. &#1080;&#1079;&#1086;&#1073;&#1088;&#1072;&#1078;&#1077;&#1085;&#1080;&#1077; &#1074;&#1085;&#1080;&#1079;&#1091;). </td>
+			  </tr>  
+			  <tr>
+				<td><img src="/images/FlagChina.png" alt="&#20013;&#22269;&#20154;" style="height:25px;margin-top:10px;"></img></td>
+				<td> &#38169;&#35823;&#65306;&#21442;&#32771;&#21495;&#26080;&#25928;&#12290;&#35831;&#22312;&#36755;&#20837;&#23383;&#27573;&#20013;&#36755;&#20837;&#24744;&#30340;&#21442;&#32771;&#32534;&#21495;&#65288;&#35831;&#21442;&#35265;&#19979;&#22270;) &#12290;</td>
+			  </tr>  
+			  <tr>
+				<td><img src="/images/FlagTunesia.png" alt="&#1593;&#1585;&#1576;&#1610;" style="height:25px;margin-top:10px;"></img></td>
+			   <td><bdo dir="rtl"> &#1582;&#1591;&#1571;: &#1575;&#1604;&#1585;&#1602;&#1605; &#1575;&#1604;&#1605;&#1585;&#1580;&#1593;&#1610; &#1594;&#1610;&#1585; &#1589;&#1575;&#1604;&#1581;. &#1610;&#1585;&#1580;&#1609; &#1573;&#1583;&#1582;&#1575;&#1604; &#1585;&#1602;&#1605;&#1603; &#1575;&#1604;&#1605;&#1585;&#1580;&#1593;&#1610; &#1601;&#1610; &#1581;&#1602;&#1604; &#1575;&#1604;&#1573;&#1583;&#1582;&#1575;&#1604; (&#1575;&#1606;&#1592;&#1585; &#1575;&#1604;&#1589;&#1608;&#1585;&#1577; &#1571;&#1583;&#1606;&#1575;&#1607;).</bdo></td>
+			</tr>  
+		  </table style="margin-bottom: 20;">
+		  <br>
+	{% endif %}
+
+
+	<div class="wrapper" >
+			
+			<form class="form-signin" method="get">
+				<h2 class="form-signin-heading">Test Status</h2>
+				<div class="form-group">
+					<input id="trackingNr" name="trackingNr" placeholder="Tracking Number" type="text" class="form-control">
+				</div>
+				<div class="form-group">
+					<button name="submit" type="submit" class="btn btn-primary">Check</button>
+				</div>
+			</form>
+	</div>
+
+	{% if error %}
+
+	<div align="center" style="margin-top:30px;">
+		<h2>Information:</h2>
+		<img src="/images/howTo.png" alt="Fehlermeldung" ></img>
+	</div>
+	{% endif %}
+</div>
+
+{% endblock %}
+
+{% block footer-scripts %}
+<script>
+<!--
+var serverRoot = '{{serverRoot}}';
+-->
+</script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/bootstrap/js/validator.min.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/datatables/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/datatables-bootstrap/js/dataTables.bootstrap.min.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/jquery/jquery.serialize-object.min.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/jquery/mustache.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/js/createProject.js"></script>
+{% endblock %}

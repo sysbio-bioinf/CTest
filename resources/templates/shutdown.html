@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% if pageTitle %}CTest - {{pageTitle}}{% else %}CTest{% endif %}</title>
+
+    <!-- Bootstrap -->
+    <link href="{{serverRoot}}/libs/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{serverRoot}}/css/main.css" rel="stylesheet">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="{{serverRoot}}/libs/html5shiv/html5shiv.min.js"></script>
+    <script src="{{serverRoot}}/libs/respond.js/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+<div class="container-fluid box-wrapper tracking">
+	{% if develop %}
+    <div class="row">    	
+    	<div class="col-md-12">
+    		<span class="label label-success" style="font-size:20px;">Development Instance</span>
+    	</div>
+    </div>    
+    {% endif %}
+    {% if pageTitle %}
+    <div class="page-header">
+    	<h1>CTest - {{pageTitle}}
+    	{% if pageTitleLink %}
+    	<small><a href="{{pageTitleLink}}">webpage</small></a>
+    	{% endif %}
+    	</h1>
+    </div>
+    {% endif %}
+    <div id="nav-row" class="row">
+        <div  class="col-md-8">
+            <ul class="nav nav-pills">
+                <li><a href="{{serverRoot}}/">CTest</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="row">
+        <div class="jumbotron">
+            <h3>The server is shutting down.</h3>
+        </div>
+    </div>
+</div>
+<script>
+<!--
+var serverRoot = '{{serverRoot}}';
+-->
+</script>
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="{{serverRoot}}/libs/jquery/jquery.min.js"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="{{serverRoot}}/libs/bootstrap/js/bootstrap.min.js"></script>
+
+</body>
+</html>

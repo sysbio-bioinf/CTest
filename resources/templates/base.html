@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CTest</title>
+    {% block header-scripts %}
+    {% endblock %}
+
+    <!-- Bootstrap -->
+    <link href="{{serverRoot}}/libs/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{serverRoot}}/libs/bootstrap-editable/css/bootstrap-editable.css" rel="stylesheet">
+    <link href="{{serverRoot}}/css/main.css" rel="stylesheet">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="{{serverRoot}}/libs/html5shiv/html5shiv.min.js"></script>
+    <script src="{{serverRoot}}/libs/respond.js/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+<div class="container-fluid box-wrapper">
+   {% if develop %}
+    <div class="row">    	
+    	<div class="col-md-12">
+    		<span class="label label-success" style="font-size:20px;">Development Instance</span>
+    	</div>
+    </div>    
+    {% endif %}
+    {% if pageTitle %}
+    <div class="page-header">
+    	<h1>CTest
+    	<!--
+            {% if pageTitleLink %}
+        -->
+        <small><a href="{{pageTitleLink}}" target="_blank">{{pageTitle}}</a></small>
+        <!--
+        {% endif %}
+        -->
+        <img src="/branding/{{pageLogo}}" alt="Logo" align="right">
+    	</h1>
+    	{% if request.isAdmin %}
+		<h5 class="text-success"><span class="glyphicon glyphicon-star"></span> CTest {{version}}</h5>
+		{% endif %} 
+    </div>
+    {% endif %}
+    <div id="nav-row" class="row">
+        {% if request.isAuthenticated %}
+        <ul class="nav navbar-nav nav-pills">
+            {% if any request.isAdmin request.isUser %}
+            <li {% block nav-new-patient %}{% endblock %}><a href="{{serverRoot}}/staff/patient">New Patient</a></li>
+            <li {% block nav-patient-find %}{% endblock %}><a href="{{serverRoot}}/staff/patient/find">Find Patient</a></li>
+            {% endif %}
+
+            {% if request.isAdmin %}
+            <li {% block nav-usr %}{% endblock %}><a href="{{serverRoot}}/staff/usr">User Management</a></li>
+            {% endif %}
+        </ul>
+        <ul class="nav navbar-right">
+            <li><a href="{{serverRoot}}/logout">Logout ({{request.userLogin}})</a></li>
+        </ul>
+        {% endif %}
+    </div>
+    {% block content %}
+{% endblock %}
+</div>
+
+<footer style="position: fixed;left: 0;bottom: 0;width: 100%;text-align:right;">
+    <p> <small>Medical Systems Biology, Ulm University</small></p>
+</footer>
+<script>
+<!--
+var serverRoot = '{{serverRoot}}';
+-->
+</script>
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="{{serverRoot}}/libs/jquery/jquery.min.js"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="{{serverRoot}}/libs/bootstrap/js/bootstrap.min.js"></script>
+{% block footer-scripts %}
+{% endblock %}
+
+</body>
+</html>

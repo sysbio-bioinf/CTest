@@ -1,0 +1,10 @@
+.idea
+*.iml
+*.db
+*.conf
+*.log
+*.nrepl-port
+/storage
+/backup
+/import
+/target

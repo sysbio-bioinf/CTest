@@ -1,0 +1,16 @@
+{% extends "templates/base.html" %}
+
+
+{% block content %}
+<div class="row">
+	<div class="wrapper" style="background-color: rgb(244, 183, 173);">
+		<h2 align="center">Patient {{patient.ordernr}} does already exist!</h2>
+		<br>
+		A patient with the order number {{patient.ordernr}} was added to the system before. 
+		Please go back to enter a valid order number.
+		
+	</div>
+	
+	
+</div>
+{% endblock %}

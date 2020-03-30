@@ -1,0 +1,133 @@
+{% extends "templates/base.html" %}
+
+{% block header-scripts %}
+<link rel="stylesheet" type="text/css" href="{{serverRoot}}/libs/datatables/css/jquery.dataTables.min.css">
+{% endblock %}
+
+{% block nav-usr %}class="active"{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-4">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h2 class="panel-title">Create new User</h2>
+                </div>
+                <div class="panel-body">
+                    <form role="form" id="new-user" method="post">
+                        <div class="form-group">
+                            <label for="newUsername">Choose username</label>
+                            <input type="text" class="form-control" id="newUsername"  name="username" placeholder="Username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newPassword">Choose password</label>
+                            <input type="password" class="form-control" id="newPassword" name="password" placeholder="Password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newUsername">Enter full name</label>
+                            <input type="text" class="form-control" id="newFullname"  name="fullname" placeholder="Full name">
+                        </div>
+                        <div class="form-group">
+                            <label for="newRole">Select Role</label>
+                            <select id="newRole" name="role" class="form-control">
+                                <option value=":ctest.config/user">User</option>
+                                <option value=":ctest.config/reporter">Reporter</option>
+                                <option value=":ctest.config/admin">Admin</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-default">Create</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h2 class="panel-title">Edit Users</h2>
+                </div>
+                <div class="panel-body user-table">
+                    <table id="user-table" class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Full name</th>
+                            <th>Role</th>
+                            <th>Edit</th>
+                            <th>Delete</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for user in users %}
+                        <tr id="row_{{user.username}}">
+                            <td class="cell-username">{{user.username}}</td>
+                            <td class="cell-fullname">{{user.fullname}}</td>
+                            <td class="cell-roles">{% ifequal user.role ":ctest.config/user" %}User{% else %}{% ifequal
+                                user.role ":ctest.config/reporter" %}Reporter{% else %}Admin{% endifequal %}{%
+                                endifequal %}</td>
+                            <td>
+                                <a class="btn btn-default" href="{{serverRoot}}/staff/usr/{{user.username}}" data-toggle="modal" data-target="#edit-dialog" {% ifequal user.role ":ctest.config/configadmin" %}{% if request.isConfigAdmin %}enabled{% else %}disabled{% endif %}{% endifequal %}>
+                                    <span class="glyphicon glyphicon-pencil"></span>
+                                </a>
+                            </td>
+                            <td>
+                                <button class="btn btn-default btn-delete-user" type="button" data-user="{{user.username}}" {% ifequal user.role ":ctest.config/configadmin" %}{% if request.isConfigAdmin %}enabled{% else %}disabled{% endif %}{% endifequal %}>
+                                    <span class="glyphicon glyphicon-trash"></span>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- User Edit Dialog -->
+    <div id="edit-dialog" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="modalUserEditLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+            </div>
+        </div>
+    </div>
+    <script id="template_edit" type="x-tmpl-mustache">
+    <a class="btn btn-default" href="{{serverRoot}}/staff/usr/<% username %>" data-toggle="modal" data-target="#edit-dialog">
+        <span class="glyphicon glyphicon-pencil"></span>
+    </a>
+    </script>
+    <script id="template_delete" type="x-tmpl-mustache">
+    <button class="btn btn-default btn-delete-user" type="button" data-user="<% username %>" data-type="DELETE">
+        <span class="glyphicon glyphicon-trash"></span>
+    </button>
+    </script>
+    <div class="modal fade" id="deleteDialog" tabindex="-1" role="dialog" aria-labelledby="deleteDialogLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="deleteDialogLabel">Are you sure?</h4>
+                </div>
+                <div class="modal-body">
+                    Do you really want to delete this user?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Do nothing</button>
+                    <button type="button" class="btn btn-primary">Delete user</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+
+
+{% block footer-scripts %}
+<script>
+<!--
+var serverRoot = '{{serverRoot}}';
+-->
+</script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/datatables/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/datatables-bootstrap/js/dataTables.bootstrap.min.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/jquery/jquery.serialize-object.min.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/jquery/mustache.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/js/users.js"></script>
+{% endblock %}

@@ -1,0 +1,75 @@
+#! /bin/sh
+
+### BEGIN INIT INFO
+# Provides:    ctest
+# Required-Start: $remote_fs $syslog
+# Required-Stop:  $remote_fs $syslog
+# Default-Start:  2 3 4 5
+# Default-Stop:   0 1 6
+# Short-Description: TraqBio
+### END INIT INFO
+
+## TraqBio settings
+
+VERSION="1.3.6"
+INSTALL_DIR="/home/youruser/ctest"
+CONFIG="ctest.conf"
+OPTS=""
+
+## Linux user and group for TraqBio process
+RUN_AS_USER="ctest"
+RUN_AS_GROUP="ctest"
+
+## memory settings for the JVM
+MIN_MEMORY="256M"
+MAX_MEMORY="4096M"
+
+
+PID_FILE="/var/run/ctest.pid"
+
+## do not change the following
+
+JAR="$INSTALL_DIR/ctest-$VERSION.jar"
+
+JAVA=`(command -v java)`
+JAVA_TRAQBIO_OPTS="-Xms$MIN_MEMORY -Xmx$MAX_MEMORY -jar $JAR run -c $CONFIG $OPTS"
+
+
+PID_FILE="/var/run/ctest.pid"
+
+
+# Using the lsb functions to perform the operations.
+. /lib/lsb/init-functions
+
+case "$1" in
+  start)
+    log_daemon_msg "Starting TraqBio" "ctest" || true
+    if start-stop-daemon --start --oknodo --quiet --chuid "$RUN_AS_USER:$RUN_AS_GROUP" --chdir $INSTALL_DIR --background --make-pidfile --pidfile $PID_FILE --exec $JAVA -- $JAVA_TRAQBIO_OPTS; then
+       log_end_msg 0 || true
+    else
+       log_end_msg 1 || true
+    fi
+    ;;
+  stop)
+    log_daemon_msg "Stopping TraqBio" "ctest" || true
+    if start-stop-daemon --stop --oknodo --quiet --pidfile $PID_FILE; then
+       log_end_msg 0 || true
+    else
+       log_end_msg 1 || true
+    fi
+    ;;
+  restart)
+   log_daemon_msg "Restarting TraqBio" "ctest" || true
+   start-stop-daemon --stop --oknodo --quiet --retry 30 --pidfile $PID_FILE
+   if start-stop-daemon --start --oknodo --quiet --chuid "$RUN_AS_USER:$RUN_AS_GROUP" --chdir $INSTALL_DIR --background --make-pidfile --pidfile $PID_FILE --exec $JAVA -- $JAVA_TRAQBIO_OPTS; then
+       log_end_msg 0 || true
+   else
+       log_end_msg 1 || true
+   fi
+   ;;
+  *)
+    log_action_msg "Usage: /etc/init.d/ctest {start|stop|restart}" || true
+    exit 1
+esac
+
+exit 0

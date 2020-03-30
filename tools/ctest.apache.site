@@ -1,0 +1,26 @@
+ProxyRequests Off
+ProxyPreserveHost On
+
+
+<VirtualHost *:80>
+   ServerName ctest.yourhost.de
+   Redirect permanent / https://ctest.yourhost.de/
+</VirtualHost>
+
+
+<VirtualHost *:443>
+   ServerName ctest.yourhost.de
+
+   SSLEngine On
+   SSLProxyEngine On
+   SSLProxyVerify none
+   SSLCertificateFile /path/to/certificate.crt
+   SSLCertificateKeyFile /path/to/keyfile.key
+
+   ProxyPass / http://localhost:CTEST-PORT/
+   ProxyPassReverse / http://localhost:CTEST-PORT/
+   ProxyPassReverseCookiePath / /
+   RequestHeader set X-Forwarded-Proto "https"
+   ErrorLog /var/log/apache2/ctest.log
+   CustomLog /var/log/apache2/ctest.log common
+</VirtualHost>

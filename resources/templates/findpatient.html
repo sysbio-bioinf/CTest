@@ -1,0 +1,37 @@
+{% extends "templates/base.html" %}
+
+
+{% block nav-patient-find %}class="active"{% endblock %}
+
+{% block content %}
+<div>
+	{% if error %}
+	<div class="wrapper" align="center" style="background-color: rgb(245, 143, 143);">
+		{% ifequal error.type "NOTFOUND" %}
+		<b>Error: The patient with order number {{error.ordernr}} does not exist!</b>
+		{% else %}
+		<b>Error: The format of the order number {{error.ordernr}} you specified is invalid!</b>
+		<br/>
+		You have to specify the order number combined with the date of sample collection.</b>
+		{% endifequal %}
+		<br/>
+	</div>
+	{% endif %}
+
+
+	<div class="wrapper" >
+			
+			<form class="form-signin" method="post">
+				<h2 class="form-signin-heading">Find Patient</h2>
+				<div class="form-group">
+					<input id="orderNr" name="orderNr" placeholder="{{findPatientHint}}" type="text" class="form-control">
+					<div id="createtip" class="success"><small>{{findPatientNote}}</small></div>
+				</div>
+				<div class="form-group">
+					<button name="submit" type="submit" class="btn btn-primary">Find</button>
+				</div>
+			</form>
+	</div>
+</div>
+
+{% endblock %}

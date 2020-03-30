@@ -1,0 +1,49 @@
+{% extends "templates/base.html" %}
+
+{% block header-scripts %}
+<link rel="stylesheet" type="text/css" href="{{serverRoot}}/libs/toggle-switch/toggle-switch.css">
+<link rel="stylesheet" type="text/css" href="{{serverRoot}}/libs/datatables/css/jquery.dataTables.min.css">
+{% endblock %}
+
+{% block nav-new-patient %}class="active"{% endblock %}
+
+{% block content %}
+<div class="wrapper">
+		 <form class="form-signin" action="/staff/patient/create" method="post">
+			 <h2 class="form-signin-heading">New Patient</h2>
+			 <div class="form-group">
+				 <input id="orderNr" name="orderNr" placeholder="{{newPatientHint}}" type="text" class="form-control">
+				 <div id="createtip"class="success"><small>&nbsp; {{newPatientNote}}</small></div>
+			 </div>
+			 <div class="form-group">
+				 <button id="submitpat" name="submit" type="submit" class="btn btn-primary">Create</button>
+			 </div>
+		 </form>
+</div>
+{% endblock %}
+
+{% block footer-scripts %}
+<script>
+<!--
+var serverRoot = '{{serverRoot}}';
+-->
+</script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/bootstrap/js/validator.min.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/datatables/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/datatables-bootstrap/js/dataTables.bootstrap.min.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/jquery/jquery.serialize-object.min.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/jquery/mustache.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/js/createProject.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/jquery.min.js"></script>
+<script type="text/javascript">
+	var intRegex = /^{{orderNumberInputFormat}}$/;
+	$("#submitpat").prop('disabled', true);
+	$("#orderNr").on("input",function(e){
+		    		if($(this).val().match(intRegex)){
+							$("#submitpat").prop('disabled', false);
+		    			//alert("blubb!");
+						} else{
+							$("#submitpat").prop('disabled', true);
+						}});
+	</script>
+{% endblock %}

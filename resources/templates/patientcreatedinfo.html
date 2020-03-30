@@ -1,0 +1,115 @@
+{% extends "templates/base.html" %}
+
+{% block header-scripts %}
+<link rel="stylesheet" type="text/css" href="{{serverRoot}}/libs/toggle-switch/toggle-switch.css">
+<link rel="stylesheet" type="text/css" href="{{serverRoot}}/libs/datatables/css/jquery.dataTables.min.css">
+{% endblock %}
+
+{% block nav-prj-create %}class="active"{% endblock %}
+
+{% block content %}
+<div class="row">
+		<div class="col-md-10 col-md-offset-1">
+			{% if patient.editable %}
+			<div><h3><b>Please Check Again</b>, you specified the following order number: {{patient.ordernrwithoutdate}}</h3>
+				Please check the <b>correctness</b> of the <b>order number!</b>
+				In case of a typing error <a href="{{patient.editlink}}"><b>click here</b></a> to correct the order number.
+			</div>
+			<hr/>
+			{% endif %}
+				<div id="patientReport">
+						<h1>ANR {{patient.ordernr}} <img src="/branding/{{patientDocumentLogo}}" alt="Clinic Logo" align="right"></h1>
+
+						<table align="center" style="width:80%;padding:10px;background-color: rgb(245, 243, 243);">
+							<tr>
+							<td><img src="/images/FlagGermany.png" alt="Deutsch" style="width:100px;height:50px;margin-top:10px;margin-right:10px;"></td>
+							<td>Um Ihnen einen einfachen und m&ouml;glichst schnellen Zugriff auf den Status Ihres Tests zu geben, haben wir einen Internetdienst eingerichtet. Sie haben direkten Zugriff auf den Status Ihres Tests &uuml;ber folgende Internetadresse:</td>
+							</tr>
+							<tr>
+							<td><img src="/images/FlagUnionJack.png" alt="English" style="width:100px;height:50px;margin-top:10px;"></td>
+							<td>To provide you a quick and easy access to your test result we set up a dedicated internet service. You can reach your personal test result using following website:</td>
+							</tr>
+							<tr>
+							<td><img src="/images/FlagFrance.png" alt="Fran&ccedil;ais" style="width:100px;height:50px;margin-top:10px;"></td>
+							<td>Pour vous offrir un service simple et rapid pour l'acc&egrave;s votre test, nous avons ouvr&eacute; un service direct via l'adresse Internet suivante:</td>
+							</tr>
+							<tr>
+								<td><img src="/images/FlagTurkey.png" alt="T&uuml;rk" style="width:100px;height:50px;margin-top:10px;"></td>
+								<td>Testinizin sonucuna kolay ve h&#305;zl&#305; bir &#351;ekilde eri&#351;ebilmeniz i&ccedil;in bir internet hizmeti kurduk. A&#351;a&#287;&#305;daki internet adresi arac&#305;l&#305;&#287;&#305;yla testinizin sonucuna do&#287;rudan eri&#351;ebilirsiniz:</td>
+							</tr>
+							<tr>
+								<td><img src="/images/FlagItaly.png" alt="Italiano" style="width:100px;height:50px;margin-top:10px;" ></td>
+								<td>Al fine di fornire un veloce e facile accesso al risultato del test, abbiamo messo a punto un servizio internet dedicato. &Eacute; possibile avere accesso al proprio risultato utilizzando il seguente sito: </td>
+							</tr>
+							<!--
+							<tr>
+								<td><img src="/images/FlagCroatia.png" alt="Hrvatski" style="width:100px;height:50px;"></td>
+								<td>Postavili smo internetsku uslugu radi jednostavnijeg i br&#382;eg pristupa statusu va&#353;eg testa. Ova internetska adressa pru&#382;a vam izravan pristup statusu testa. </td>
+							</tr>
+							-->
+							<tr>
+								<td><img src="/images/FlagRussia.png" alt="&#1088;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;" style="width:100px;height:50px;margin-top:10px;"></td>
+								<td>&#1052;&#1099; &#1091;&#1089;&#1090;&#1088;&#1086;&#1080;&#1083;&#1080; &#1080;&#1085;&#1090;&#1077;&#1088;&#1085;&#1077;&#1090;-&#1089;&#1077;&#1088;&#1074;&#1080;&#1089;, &#1095;&#1090;&#1086;&#1073;&#1099; &#1074;&#1099; &#1084;&#1086;&#1075;&#1083;&#1080; &#1087;&#1088;&#1086;&#1089;&#1090;&#1086; &#1080; &#1073;&#1099;&#1089;&#1090;&#1088;&#1086; &#1087;&#1086;&#1083;&#1091;&#1095;&#1080;&#1090;&#1100; &#1076;&#1086;&#1089;&#1090;&#1091;&#1087; &#1082; &#1089;&#1090;&#1072;&#1090;&#1091;&#1089;&#1091; &#1074;&#1072;&#1096;&#1077;&#1075;&#1086; &#1090;&#1077;&#1089;&#1090;&#1072;. &#1055;&#1088;&#1103;&#1084;&#1086;&#1081; &#1076;&#1086;&#1089;&#1090;&#1091;&#1087; &#1082; &#1089;&#1090;&#1072;&#1090;&#1091;&#1089;&#1091; &#1074;&#1072;&#1096;&#1077;&#1075;&#1086; &#1090;&#1077;&#1089;&#1090;&#1072; &#1087;&#1086; &#1089;&#1083;&#1077;&#1076;&#1091;&#1102;&#1097;&#1077;&#1084;&#1091; &#1080;&#1085;&#1090;&#1077;&#1088;&#1085;&#1077;&#1090;-&#1072;&#1076;&#1088;&#1077;&#1089;&#1091;:</td>
+							</tr>
+							<tr>
+								<td><img src="/images/FlagChina.png" alt="&#20013;&#22269;&#20154;" style="width:100px;height:50px;margin-top:10px;"></td>
+								<td>&#20026;&#20102;&#24555;&#36895;&#26041;&#20415;&#22320;&#35775;&#38382;&#24744;&#30340;&#27979;&#35797;&#29366;&#24577;&#65292;&#25105;&#20204;&#23454;&#26045;&#20102;&#19968;&#39033;&#20114;&#32852;&#32593;&#26381;&#21153;&#12290; &#24744;&#21487;&#20197;&#36890;&#36807;&#20197;&#19979;&#32593;&#31449;&#30452;&#25509;&#35775;&#38382;&#27979;&#35797;&#29366;&#24577;&#12290;:</td>
+							</tr>
+							<tr>
+								<td><img src="/images/FlagTunesia.png" alt="&#1593;&#1585;&#1576;&#1610;" style="width:100px;height:50px;margin-top:10px;"></td>
+								<td style="text-align:right"><span dir="rtl" style="text-align:right">&#1604;&#1602;&#1583; &#1571;&#1606;&#1588;&#1571;&#1606;&#1575; &#1604;&#1603; &#1582;&#1583;&#1605;&#1577; &#1573;&#1606;&#1578;&#1585;&#1606;&#1578; &#1604;&#1578;&#1605;&#1606;&#1581;&#1603; &#1608;&#1589;&#1608;&#1604;&#1575;&#1611; &#1587;&#1607;&#1604;&#1575;&#1611; &#1608;&#1587;&#1585;&#1610;&#1593;&#1611;&#1575; &#1573;&#1604;&#1609; &#1581;&#1575;&#1604;&#1577; &#1608; &#1606;&#1578;&#1610;&#1580;&#1577; &#1575;&#1604;&#1575;&#1582;&#1578;&#1576;&#1575;&#1585;. &#1604;&#1583;&#1610;&#1603; &#1575;&#1605;&#1603;&#1606;&#1610;&#1578; &#1575;&#1604;&#1608;&#1589;&#1608;&#1604; &#1575;&#1604;&#1605;&#1576;&#1575;&#1588;&#1585; &#1573;&#1604;&#1609; &#1581;&#1575;&#1604;&#1577; &#1575;&#1604;&#1575;&#1582;&#1578;&#1576;&#1575;&#1585; &#1575;&#1604;&#1582;&#1575;&#1589; &#1576;&#1603; &#1593;&#1576;&#1585; &#1593;&#1606;&#1608;&#1575;&#1606; &#1575;&#1604;&#1573;&#1606;&#1578;&#1585;&#1606;&#1578; &#1575;&#1604;&#1578;&#1575;&#1604;&#1610;:</span>&lrm;</td>
+							</tr>
+						</table>
+						<div align="center">
+
+
+								<table>
+								<tr>
+								<td>
+								<div style="vertical-align:middle;">
+									<h3><strong>{{patient.trackinglink}}</strong></h3>
+								</div>
+								<table align="center">
+
+									<tr>
+									<td><img src="/images/mobile.png" alt="globe" style="height:40px;margin-right:15px;"></td>
+									<td><img src="/staff/qrcodes/{{patient.qrcode}}" alt="QR code;" style="width:150px;height:150px;"></td>
+
+									</tr>
+								</table>
+							</td>
+							<td rowspan="2"><img src="/images/doNotCall.png" alt="Deutsch" style="width:220px;"></td>
+
+							</tr>
+							</table>
+
+							<img src="/images/whitey-line.png" alt="Deutsch" style="height:100;width:200px;">
+
+						</div>
+				</div>
+		</div>
+</div>
+{% endblock %}
+
+{% block footer-scripts %}
+
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/bootstrap/js/validator.min.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/datatables/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/datatables-bootstrap/js/dataTables.bootstrap.min.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/jquery/jquery.serialize-object.min.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/jquery/mustache.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/js/createProject.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/print/print.min.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/print/imagesloaded.pkgd.min.js"></script>
+<script type="text/javascript" language="javascript" >
+
+$(document).ready(function () {
+        imagesLoaded(document.body, function(){
+        console.log("in print patient");
+        setTimeout(printJS('patientReport', 'html'), 1);
+        console.log("out print patient");
+			})});
+</script>
+
+
+{% endblock %}

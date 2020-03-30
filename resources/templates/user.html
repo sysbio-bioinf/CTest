@@ -1,0 +1,42 @@
+<div>
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="modalUserEditLabel">Edit User: {{user.username}}</h4>
+    </div>
+    <div class="modal-body">
+        <form id="editForm" role="form" class="form-horizontal">
+            <div class="form-group">
+                <label class="col-sm-2 control-label" for="editUsername">Username</label>
+                <div class="col-sm-10">
+                    <p id="editUsername" class="form-control-static" data-username="{{user.username}}">{{user.username}}</p>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="editPassword" class="col-sm-2 control-label">Password</label>
+                <div class="col-sm-10">
+                    <input name="password" type="password" class="form-control" id="editPassword" placeholder="*******">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label" for="editFullname">Full name</label>
+                <div class="col-sm-10">
+                    <input name="fullname" type="text" class="form-control" id="editFullname" data-username="{{user.fullname}}" value="{{user.fullname}}">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="newRole" class="col-sm-2 control-label">Select Role</label>
+                <div class="col-sm-10">
+                    <select id="newRole" name="role" class="form-control" {% ifequal user.role ":ctest.config/configadmin" %}disabled{% endifequal %}>
+                        <option value=":ctest.config/user" {% ifequal user.role ":ctest.config/user" %}selected{% endifequal %}>User</option>
+                        <option value=":ctest.config/reporter" {% ifequal user.role ":ctest.config/reporter" %}selected{% endifequal %}>Reporter</option>
+                        <option value=":ctest.config/admin" {% ifequal user.role ":ctest.config/admin" %}selected{% else %}{% ifequal user.role ":ctest.config/configadmin" %}selected{% endifequal %}{% endifequal %}>Admin</option>
+                    </select>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button id="saveEditButton" type="button" class="btn btn-primary">Save changes</button>
+    </div>
+</div>
