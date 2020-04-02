@@ -1,6 +1,6 @@
-# CTest: an online system to track COVID-19 test results
-
 <img src="logo/CTestLogo-200.png" alt="CTest logo" align="right" />
+
+# CTest: an online system to track COVID-19 test results
 
 This is an online tracking system for COVID-19 tests. CTest provides a browser-based online status update for testees using personalized QR-codes (and web links). CTest does not require installation of any apps or logins for users. Instead, CTest uses cryptographically secure tracking IDs and does not use any personal data.
 The primary aim of this approach was to reduce the burden of clinical staff in the COVID-19 crisis and to allow efficient and almost instantaneous communication of the results to testees. Speedy communication is of the essence in the current crisis, as it virus carriers can be infectious before first symptoms arise.
@@ -10,6 +10,10 @@ The primary aim of this approach was to reduce the burden of clinical staff in t
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. 
 
 Download a release version of CTest: 
+
+* [Version 0.2.1](https://github.com/sysbio-bioinf/CTest/releases/download/0.2.1/ctest-0.2.1.jar)
+
+Older versions:
 
 * [Version 0.2.0](https://github.com/sysbio-bioinf/CTest/releases/download/0.2.0/ctest-0.2.0.jar)
 
