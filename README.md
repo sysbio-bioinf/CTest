@@ -5,6 +5,33 @@
 This is an online tracking system for COVID-19 tests. CTest provides a browser-based online status update for testees using personalized QR-codes (and web links). CTest does not require installation of any apps or logins for users. Instead, CTest uses cryptographically secure tracking IDs and does not use any personal data.
 The primary aim of this approach was to reduce the burden of clinical staff in the COVID-19 crisis and to allow efficient and almost instantaneous communication of the results to testees. Speedy communication is of the essence in the current crisis, as it virus carriers can be infectious before first symptoms arise.
 
+
+## Table of Contents
+   
+  * [Getting Started](#getting-started)
+  * [Prerequisites](#prerequisites)
+  * [Initialisation and Startup](#initialisation-and-startup)
+  * [Configuration](#configuration)
+     * [General Settings](#general-settings)
+     * [Server Settings for CTest](#server-settings-for-ctest)
+     * [Order numbers &amp; Import](#order-numbers--import)
+     * [Backup](#backup)
+     * [Branding](#branding)
+     * [CTest server setups with Apache as proxy](#ctest-server-setups-with-apache-as-proxy)            
+  * [Using CTest](#using-ctest)
+     * [Administration](#administration)
+     * [User](#user)
+     * [If something went wrong](#if-something-went-wrong)
+     * [Testee](#testee)
+     * [App integration](#app-integration)
+  * [Build](#build)
+  * [Built With](#built-with)
+  * [Authors](#authors)
+  * [License](#license)
+  * [Acknowledgments](#acknowledgments)
+  * [Cite](#cite)
+
+
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. 
