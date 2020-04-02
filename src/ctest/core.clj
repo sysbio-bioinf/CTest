@@ -25,9 +25,8 @@
     [ctest.db.init :as init]
     [ctest.db.migrate :as migrate]
     [ctest.runtime :as runtime]
-    [ctest.actions.tools :as tools]
-    [ctest.import-daemon :as d]
-    [ctest.backup :as b]
+    [ctest.daemons.import :as import]
+    [ctest.daemons.backup :as backup]
     [ctest.reporting :as report]
     [clojure.string :as str]
     [ctest.common :as common])
@@ -151,34 +150,41 @@
               (.getMessage t)
               log-file)))))))
 
-; TODO validate Order Numbers and Import config
+
 (defn run
   "Run ctest"
   [& run-args]
-  (let [{:keys [options errors summary]} (cli/parse-opts (first run-args) run-options)]
+  (let [{:keys [options errors summary]} (cli/parse-opts (first run-args) run-options)
+        {:keys [config-file]} options]
     ;; Handle help and error conditions
     (cond
       (:help options) (exit 0 (run-usage summary))
-      (not (.exists (clojure.java.io/as-file (:config-file options)))) (exit 1 "Config file missing")
+      (not (.exists (clojure.java.io/as-file config-file))) (exit 1 "Config file missing")
       errors (exit 1 (error-msg errors)))
-    (let [{:keys [data-base-name, server-config, storage-path, mail-config] :as config} (read-config (:config-file options))]
-      (runtime/configure-logging config)
+    (let [{:keys [data-base-name] :as config} (read-config config-file)]
       (c/update-config config)
-      (c/update-db-name data-base-name)
-      (when (db-exists? (:config-file options), data-base-name)
-        ; Start server (query server-config atom, since default settings might be missing in the config read from the file)
-        ; immediate backup
-        (let [backup-dir (c/backup-path)]
-          (when-not (str/blank? backup-dir)
-            (b/perform-backup backup-dir)))
-        ; create tables if needed
-        (init/create-tables-if-needed (c/db-connection))
-        ; start server and daemons
-        (let [server (runtime/start-server (app (c/server-config)))]
-          (d/start-daemon)
-          (b/start-backup-daemon)
-          (runtime/shutdown-on-sigterm!)
-          server)))))
+      (if-let [errors (c/check-config)]
+        (println
+          (format "The configuration file \"%s\" contains the following errors:\n  %s"
+            config-file
+            (str/join "\n  " errors)))
+        (do
+          (runtime/configure-logging config)
+          (c/update-db-name data-base-name)
+          (when (db-exists? config-file, data-base-name)
+            ; Start server (query server-config atom, since default settings might be missing in the config read from the file)
+            ; immediate backup
+            (let [backup-dir (c/backup-path)]
+              (when-not (str/blank? backup-dir)
+                (backup/perform-backup backup-dir)))
+            ; create tables if needed
+            (init/create-tables-if-needed (c/db-connection))
+            ; start server and daemons
+            (let [server (runtime/start-server (app (c/server-config)))]
+              (import/start-daemon)
+              (backup/start-backup-daemon)
+              (runtime/shutdown-on-sigterm!)
+              server)))))))
 
 
 (defn prepare-filesystem-if-needed

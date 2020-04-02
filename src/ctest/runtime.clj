@@ -13,8 +13,8 @@
     [ring.adapter.jetty :as jetty]
     [clojure.tools.logging :as log]
     [ctest.config :as c]
-    [ctest.import-daemon :as d]
-    [ctest.backup :as b]
+    [ctest.daemons.import :as import]
+    [ctest.daemons.backup :as backup]
     [ctest.reporting :as report])
   (:import
     (org.eclipse.jetty.server Server AbstractConnector)
@@ -187,8 +187,8 @@
                                    (when-not (ensure shutting-down?)
                                      (alter shutting-down? (constantly true))))
                              (log/infof "Stopping server (signal: %s) ...", signal)
-                             (d/stop-daemon)
-                             (b/stop-backup-daemon)
+                             (import/stop-daemon)
+                             (backup/stop-backup-daemon)
                              (stop-server))]
       (deref stopped-fut))))
 

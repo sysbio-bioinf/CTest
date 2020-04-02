@@ -6,13 +6,14 @@
 ; the terms of this license.
 ; You must not remove this notice, or any other, from this software.
 
-(ns ctest.backup
+(ns ctest.daemons.backup
   (:require [ctest.actions.tools :as t]
             [ctest.config :as c]
             [ctest.reporting :as report]
             [clojure.java.io :as io]
             [ctest.db.migrate :as migrate]
-            [ctest.common :as common])
+            [ctest.common :as common]
+            [clojure.string :as str])
   (:import (java.util.concurrent ScheduledExecutorService Executors TimeUnit)
            (java.time.temporal ChronoUnit)
            (java.time ZonedDateTime)))
@@ -43,24 +44,26 @@
         (report/cause-trace t)))))
 
 
-(def ^:const minute-per-hour 30)
-(def ^:const period 60)
-
 
 (defn start-backup-daemon
   []
   (try
-    (if-let [backup-dir (c/backup-path)]
-      (let [now (t/now)
-            current-hour (.truncatedTo now ChronoUnit/HOURS)
-            next-half (.plusMinutes current-hour minute-per-hour)
-            delay (.between ChronoUnit/MINUTES now next-half)
-            delay (cond-> delay (neg? delay) (+ period))
-            service (doto (Executors/newScheduledThreadPool 1)
-                      (.scheduleAtFixedRate (partial perform-backup backup-dir), delay, period, TimeUnit/MINUTES))]
-        (c/set-backup-service service)
-        nil)
-      (report/error "Backup", "You forgot to specify a :backup-path in the config file!"))
+    (if-let [{:keys [start-minute, interval, path]} (c/backup-config)]
+      (if (str/blank? path)
+        (report/error "Backup", "You forgot to specify a backup path in the config file (:backup {:path ...})!")
+        (let [now (t/now)
+              ; default values for backup schedule
+              start-minute (or start-minute 30)
+              interval (or interval 60)
+              current-hour (.truncatedTo now ChronoUnit/HOURS)
+              next-half (.plusMinutes current-hour start-minute)
+              delay (.between ChronoUnit/MINUTES now next-half)
+              delay (cond-> delay (neg? delay) (+ interval))
+              service (doto (Executors/newScheduledThreadPool 1)
+                        (.scheduleAtFixedRate (partial perform-backup path), delay, interval, TimeUnit/MINUTES))]
+          (c/set-backup-service service)
+          nil))
+      (report/warn "Backup", "No backup will be performed because you did not specify backup settings (:backup {...})!"))
     (catch Throwable t
       (report/error "Backup"
         "Exception in backup startup:\n%s"

@@ -9,7 +9,7 @@
 (ns ctest.version)
 
 
-(def ^:private ^:const version "0.2.0")
+(def ^:private ^:const version "0.2.1")
 
 
 (defn ctest-version

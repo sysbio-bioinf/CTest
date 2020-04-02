@@ -146,6 +146,34 @@
       (templates/unhandled-exception request))))
 
 
+(defn app-test-status
+  [tracking-number]
+  (try
+    (if (str/blank? tracking-number)
+      {:status 400
+       :body "No tracking number specified"}
+      (let [{:keys [error-type, patient]} (lookup-patient tracking-number)]
+        ; error handling
+        (if error-type
+          {:status (if (= error-type "EXCEPTION") 500 400)
+           :body (case error-type
+                   "EXCEPTION" "An exception occured during database access!"
+                   "NOTFOUND"  (format "Tracking number \"%s\" does not exist!" tracking-number)
+                   "INVALIDFORMAT" (format "The format of the specified tracking number \"%s\" is invalid!"
+                                     tracking-number))}
+          ; success
+          {:status 200
+           :body (if (= (:status patient) (c/import-negative-result))
+                   "negative"
+                   "in progress")})))
+    (catch Throwable t
+      (report/error "App Test Status Query"
+        "Exception during app test status query:\n%s"
+        (report/cause-trace t))
+      {:status 500
+       :body "An exception occured!"})))
+
+
 (defn rename-qrcode-file
   [old-order-number, new-order-number]
   (try

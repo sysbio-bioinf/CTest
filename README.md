@@ -1,5 +1,7 @@
 # CTest: an online system to track COVID-19 test results
 
+<img src="logo/CTestLogo-200.png" alt="CTest logo" align="right" />
+
 This is an online tracking system for COVID-19 tests. CTest provides a browser-based online status update for testees using personalized QR-codes (and web links). CTest does not require installation of any apps or logins for users. Instead, CTest uses cryptographically secure tracking IDs and does not use any personal data.
 The primary aim of this approach was to reduce the burden of clinical staff in the COVID-19 crisis and to allow efficient and almost instantaneous communication of the results to testees. Speedy communication is of the essence in the current crisis, as it virus carriers can be infectious before first symptoms arise.
 
@@ -95,15 +97,11 @@ CTest offers the following general settings for customisation:
 
 ``` clojure
 { ...
- :data-base-name "ctest.db"
- :import-path "/storage/import/upload",
- :backup-path "/safestorage/ctest/backup"
- :qrcode-path "/storage/qrcodes"
-
+ :data-base-name "/installpath/ctest/ctest.db"
+ 
  :log-level :info,
  :log-file "ctest.log",
 
- :data-base-name "/installpath/ctest/ctest.db",
  ... }
 ```
 
@@ -111,15 +109,6 @@ The effect of these settings is described in the following.
 
 `:data-base-name`
  : path to the database that CTest uses to store all user account and tracking data.
-
-`:import-path`
- : path to the directory where CSV files containing test status updates will be put.
-
-`:backup-path`
- : path to the directory where the project stores hourly backups from the database.
- 
- `:qrcode-path`
- : path to the directory where CTest stores generated qrcodes.
 
 `:log-level`
  : specifies how much information is written into the log file. Possible values: `:trace`, `:debug`, `:info`, `:warn`, `:error`, `:fatal`
@@ -185,7 +174,94 @@ The following properties are used:
  : specifies the password needed to access the keystore (if any).
 
 
-### Example CTest server setups
+### Order numbers & Import
+
+The format of **order numbers** needs to be specified by a regular expression.
+In some scenarios the uniqueness of order numbers can only be guaranteed for the same day.
+Therefore, you can specify `:append-date? true` such that CTest constructs order numbers 
+from the given numbers `XXXXXXXX` by appending the current date resulting in `XXXXXXXX-YYYYMMDD`.
+If this is not required, specify `:append-date? false`.
+A configuration that appends dates may look as follows:
+``` clojure
+:order-numbers {:input-format "[0-9]{8,8}"
+                :append-date? true
+                :new-patient-hint "Order Number"
+                :new-patient-note "Note: Order Number must be an eight digit number."
+                :find-patient-hint "XXXXXXXX-YYYYMMDD"
+                :find-patient-note "Note: Order Number must be an eight digit number combined with eight digit date separated by a hyphen."}
+```
+Hints about valid order numbers for new patients and patient identifiers to find patients in the web front end 
+can be configured using ```new-patient-hint``` and ```new-patient-note``` as well as ```find-patient-hint``` and ```find-patient-note```.
+
+You have to specify the format of the CSV files and the location (`:path`) where CTest can find them:
+``` clojure
+:import {:path "/path/to/import/folder"
+         :order-number-column "auftragsn"
+         :date-column "abnahme"
+         :date-format "dd.MM.yyyy"
+         :result-column "ergebnis"
+         :negative-result "ungr"
+         :column-separator ";"}
+```
+
+CTest will keep watching the specified `:path` for new csv files.
+When no dates are appended to the order numbers, two columns are required:
+
+1. the column containing the order number (`:order-number-column`).
+2. the column containing the result of the test (`:result-column`).
+
+In case dates are appended to the order numbers, a third column (`:date-column`) is needed containing
+the date of sample collection (the same date the patient was entered into CTest).
+Furthermore, the date format needs to be specified (`:date-format`) 
+with placeholders `d` for day digit, `M` for month digit and `y` for year digit (see [Javadocs](https://docs.oracle.com/javase/8/docs/api/index.html?overview-summary.html)).
+
+You have to specify the correct `:column-separator` that is used in the CSV files.
+
+
+### Backup
+
+CTest performs a backup on startup and with the default configuration 
+hourly backups every half an hour.
+You can adjust the settings in the configuration file:
+
+``` clojure
+:backup {:path "/safestorage/ctest/backup"
+         :start-minute 30
+         :interval 60}
+```
+
+`:path`
+ : path to the directory where the project stores backups from the database.
+ 
+`interval` 
+ : interval between two consecutive backups.
+ 
+`:start-minute`
+ : the minute of an hour when the first backup shall be performed (relative to the start of CTest).
+
+If the configuration does not contain a `:backup` entry, CTest will not do any backup.
+
+
+
+### Branding
+
+You can customize your instance of CTest by modifying the following parameters in the configuration file ```ctest.conf```:
+
+``` clojure
+:branding {:path "storage/branding"
+           :page-logo "logo.png"
+           :patient-document-logo "pat_logo.png"
+           :page-title "Corona Virus Information",
+           :page-title-link "http://your.hospital.org/corona"}
+```
+First, specify the ```path```, where your logo images are stored. 
+The parameters ```page-logo```and ```patient-document-logo``` determine the filenames of the logo 
+that is shown on top of the page and the one that is included in the patient printouts. 
+```page title```and ```page title link``` can be used as header and link to your organization unit.
+
+
+
+### CTest server setups with Apache as proxy
 
 This section explains a fully featured setup on a Linux server with automatic startup of CTest when the server is rebooted.
 There are two setup scenarios for CTest:
@@ -368,72 +444,48 @@ The `:server-config` of the CTest configuration has to look like:
 ```
 
 
--------
-
-### Branding
-
-You can customize your instance of CTest by modifying the following parameters in the configuration file ```ctest.conf```:
-
-``` clojure
-     :branding {:path "storage/branding"
-                :page-logo "logo.png"
-                :patient-document-logo "pat_logo.png"
-                :page-title "Corona Virus Information",
-                :page-title-link "http://your.hospital.org/corona"}
-```
-First, specify the ```path```, where your logo images are stored. 
-The parameters ```page-logo```and ```patient-document-logo``` determine the filenames of the logo 
-that is shown on top of the page and the one that is included in the patient printouts. 
-```page title```and ```page title link``` can be used as header and link to your organization unit.
-
-
-### Order numbers & CSV import
-
-The format of **order numbers** needs to be specified by a regular expression.
-In some scenarios the uniqueness of order numbers can only be guaranteed for the same day.
-Therefore, you can specify `:append-date? true` such that CTest constructs order numbers 
-from the given numbers `XXXXXXXX` by appending the current date resulting in `XXXXXXXX-YYYYMMDD`.
-If this is not required, specify `:append-date? false`.
-A configuration that appends dates may look as follows:
-``` clojure
-:order-numbers {:input-format "[0-9]{8,8}"
-                :append-date? true
-                :new-patient-hint "Order Number"
-                :new-patient-note "Note: Order Number must be an eight digit number."
-                :find-patient-hint "XXXXXXXX-YYYYMMDD"
-                :find-patient-note "Note: Order Number must be an eight digit number combined with eight digit date separated by a hyphen."}
-```
-Hints about valid order numbers for new patients and patient identifiers to find patients in the web front end 
-can be configured using ```new-patient-hint``` and ```new-patient-note``` as well as ```find-patient-hint``` and ```find-patient-note```.
-
-You have to specify the format of the CSV files and the location where CTest can find them:
-``` clojure
-  :import {:path "/path/to/import/folder"
-              :order-number-column "auftragsn"
-              :date-column "abnahme"
-              :date-format "dd.MM.yyyy"
-              :result-column "ergebnis"
-              :negative-result "ungr"}
-```
-
-CTest will keep watching the specified `path` for new csv files.
-When no dates are appended to the order numbers, two columns are required:
-
-1. the column containing the order number (`:order-number-column`).
-2. the column containing the result of the test (`:result-column`).
-
-In case dates are appended to the order numbers, a third column (`:date-column`) is needed containing
-the date of sample collection (the same date the patient was entered into CTest).
-Furthermore, the date format needs to be specified (`:date-format`) 
-with placeholders `d` for day digit, `M` for month digit and `y` for year digit (see [Javadocs](https://docs.oracle.com/javase/8/docs/api/index.html?overview-summary.html)).
-
-
 ## Using CTest
 
 ### Administration
 
-As specified in the initialisation step, your admin user can create other users in CTest. 
-Normal user accounts can create patient test tracks and also search the database for existing patients by their order number. 
+CTest can be accessed in two different roles:
+
+1. Administrator
+2. User 
+
+The administrator accounts serve only for creating new accounts (users, administrators and reporters).
+An initial administrator account is created on initialisation of CTest.
+The user accounts are used by staff members to enter new test tracking entries
+or search for existing ones by their order number.
+
+Apart from that, there is a third *Reporter* role for monitoring.
+
+#### Reporting
+
+A *Reporter* account has access to the reporting functionality of CTest
+and can inspect problems in the running CTest instance.
+All results are returned in the machine-readable JSON format.
+
+The following queries can be performed:
+
+1. GET `/reports/list` to get the list of reports logged by CTest.
+   The reports are either informations (`info`), warnings (`warn`) or errors (`error`). 
+   It is possible to filter the report list by the following two parameters:
+ 
+    * `type` must exactly match `error`, `warn` or `info`.
+    * `context` specifies a search string that matches all reports whose context contains this string.
+
+2. POST `/reports/delete` to delete the specified reports.
+   The ids of the reports need to be passed in JSON format as the body of the request, e.g.
+   ```json
+   {"report-ids": [2, 3, 7]}
+   ```
+    
+3. GET `/reports/views` to get the total views of tracking pages per day.
+
+4. GET `/reports/test-dates` to get the list of test dates for further statistical analysis.
+
+5. GET `/reports/system` to get information about the current memory consumption and CPU usage.
 
 ### User
 
@@ -471,12 +523,21 @@ However, if a wrong order number was entered, it can be changed on the page foll
 
 ### Testee
 
-Testees can either type in the specific URL from their information sheet or scan the QR-Code to access their current test status. 
+Testees can either type in the specific tracking URL from their information sheet or scan the QR-Code to access their current test status. 
 Alternatively, it is possible to enter the tracking-ID in the correspoding text field on`ctest.your.domain.tld/track` (see following image).
 
 ![](https://i.imgur.com/mfcHpFy.png)
 
 No login of any kind is required for these actions!
+
+### App integration
+
+CTest facilitates the access of third-party software (apps), 
+if the testee decide to use these.
+The apps can query the status using the tracking link with appended `?app=true`.
+This returns only the test status "negative" or "in progress" instead of the complete HTML document.
+
+
 
 ## Build
 
@@ -512,7 +573,11 @@ Gunnar Völkel (1,¶), Axel Fürstberger (1,¶), Julian D. Schwab (1,¶), Silke 
 
 ## License
 
-This project is licensed under the Eclipse Public License v2.0 (EPL-2).
+Copyright © 2020 Gunnar Völkel, Julian D. Schwab, Axel Fürstberger, Silke D. Kühlwein
+
+CTest is based on [TraqBio](https://github.com/sysbio-bioinf/TraqBio) written by Fabian Schneider and Gunnar Völkel.
+
+This project is licensed under the Eclipse Public License v2.0 (EPL-2.0).
 
 ## Acknowledgments
 
@@ -520,5 +585,5 @@ We thank the COVID-19 task force of the University Hospital Ulm, Udo X. Kaisers,
 
 ## Cite
 
-If you are using this software please cite.... ***MISSING***
+If you are using this software please cite.... ***UPCOMING***
 

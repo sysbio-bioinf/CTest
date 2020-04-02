@@ -10,7 +10,8 @@
   (:require
     [clojure.string :as str]
     [clojure.pprint :refer [pprint]]
-    [clojure.java.io :as io])
+    [clojure.java.io :as io]
+    [ctest.common :as common])
   (:import
     com.mchange.v2.c3p0.ComboPooledDataSource))
 
@@ -33,13 +34,16 @@
                      :new-patient-note "Note: Order Number must be an eight digit number."
                      :find-patient-hint "XXXXXXXX-YYYYMMDD"
                      :find-patient-note "Note: Order Number must be an eight digit number combined with eight digit date separated by a hyphen."}
-     :import {:path "import"
-              :order-number-column "auftragsn"
-              :date-column "abnahme"
-              :date-format "dd.MM.yyyy"
-              :result-column "ergebnis"
-              :negative-result "ungr"}
-     :backup-path "backup"
+     :import ^:replace {:path "import"
+                        :order-number-column "auftragsn"
+                        :date-column "abnahme"
+                        :date-format "dd.MM.yyyy"
+                        :result-column "ergebnis"
+                        :negative-result "ungr"
+                        :column-separator ";"}
+     :backup {:path "backup"
+              :start-minute 30
+              :interval 60}
      :server-config ^:replace {:port 8000
                                :host "localhost"
                                :ssl? true
@@ -165,6 +169,14 @@
       :valid-order-number? (partial matches-pattern? order-number-regex))))
 
 
+(defn to-char
+  [x]
+  (cond
+    (string? x) (first x)
+    (char? x) x
+    :else (char x)))
+
+
 (defn update-config
   [config]
   (swap! ctest-config deep-merge
@@ -173,8 +185,73 @@
       (update-in [:qrcode-path] normalize-path)
       (update-in [:branding, :path] normalize-path)
       (update-in [:import, :path] normalize-path)
-      (update-in [:backup-path] normalize-path)
+      (update-in [:import, :column-separator] to-char)
+      (update-in [:backup, :path] normalize-path)
       (update-in [:order-numbers] build-predicates))))
+
+
+
+(defn check-import-settings
+  [{{:keys [path
+            column-separator
+            order-number-column
+            result-column
+            negative-result
+            date-column
+            date-format]} :import,
+    {:keys [append-date?]} :order-numbers}]
+  (cond-> []
+    (str/blank? path)
+    (conj "You did not specify a path for the CSV import.")
+
+    (not (common/file-exists? path))
+    (conj (format
+            "You specified an import path \"%s\" for the CSV import which does not exist."
+            path))
+
+    (and column-separator (not (or (string? column-separator) (char? column-separator))))
+    (conj (format
+            "You specified an invalid :column-separator \"%s\" for the CSV import (valid example: \";\")."
+            column-separator))
+
+    (str/blank? order-number-column)
+    (conj "You did not specify an :order-number-column for the CSV import.")
+
+    (str/blank? result-column)
+    (conj "You did not specify a :result-column for the CSV import.")
+
+    (str/blank? negative-result)
+    (conj "You did not specify the :negative-result value for the CSV import.")
+
+    (and append-date? (str/blank? date-column))
+    (conj "You did specify to use order numbers with appended date but did not specify a :date-column for CSV import.")
+
+    (and append-date? (str/blank? date-format))
+    (conj "You did specify to use order numbers with appended date but did not specify a :date-format for CSV import.")))
+
+
+(defn check-order-numbers
+  [{{:keys [input-format]} :order-numbers}]
+  (cond-> []
+    (str/blank? input-format)
+    (conj "You did not specify an input format for the order numbers.")))
+
+
+(defn check-config
+  []
+  (let [config @ctest-config]
+    (not-empty
+      (persistent!
+        (reduce
+          (fn [error-vec, check-fn]
+            (if-let [errors (check-fn config)]
+              (if (sequential? errors)
+                (reduce conj! error-vec errors)
+                (conj! error-vec errors))
+              error-vec))
+          (transient [])
+          [check-import-settings
+           check-order-numbers])))))
 
 
 (defn database-config
@@ -249,7 +326,11 @@
   (get-in @ctest-config [:import, :path]))
 
 (defn backup-path []
-  (:backup-path @ctest-config))
+  (get-in @ctest-config [:backup, :path]))
+
+(defn backup-config
+  []
+  (:backup @ctest-config))
 
 
 (derive ::admin ::user)

@@ -221,6 +221,29 @@
      (jdbc/query t-conn "SELECT * FROM reports"))))
 
 
+(defn find-reports
+  ([report-type, context]
+   (find-reports (c/db-connection), report-type, context))
+  ([db-conn, report-type, context]
+   (let [report-type? (not (str/blank? report-type))
+         context? (not (str/blank? context))]
+     (cond
+       (and report-type? context?)
+       (jdbc/with-db-transaction [t-conn db-conn]
+         (jdbc/query t-conn ["SELECT * FROM reports WHERE type = ? AND INSTR(context, ?) > 0", (str/lower-case report-type), context]))
+
+       report-type?
+       (jdbc/with-db-transaction [t-conn db-conn]
+         (jdbc/query t-conn ["SELECT * FROM reports WHERE type = ?", (str/lower-case report-type)]))
+
+       context?
+       (jdbc/with-db-transaction [t-conn db-conn]
+         (jdbc/query t-conn ["SELECT * FROM reports WHERE INSTR(context, ?) > 0", context]))
+
+       :else
+       (report-list db-conn)))))
+
+
 (defn delete-reports
   ([report-ids]
    (delete-reports (c/db-connection), report-ids))

@@ -8,17 +8,28 @@
 
 (ns ctest.actions.reports
   (:require [ctest.db.crud :as crud]
-            [ctest.reporting :as report])
+            [ctest.reporting :as report]
+            [clojure.string :as str])
   (:import (java.lang.management ManagementFactory)
            (com.sun.management UnixOperatingSystemMXBean)))
 
 
 
 (defn report-list
-  []
+  [report-type, context]
   (try
-    {:status 200
-     :body {:report-list (crud/report-list)}}
+    (cond
+      (and report-type (not (string? report-type)))
+      {:status 400
+       :body (format "You specified an unsupported report type: \"%s\"." report-type)}
+
+      (and context (not (string? context)))
+      {:status 400
+       :body (format "You specified an unsupported context: \"%s\"." context)}
+
+      :else
+      {:status 200
+       :body {:report-list (crud/find-reports report-type, context)}})
     (catch Throwable t
       (report/error "Report List", "Exception during report list query:\n%s", (report/cause-trace t))
       {:status 500})))
@@ -91,7 +102,7 @@
   []
   (try
     {:status 200
-     :body {:creation-dates (crud/test-dates)}}
+     :body {:test-dates (crud/test-dates)}}
     (catch Throwable t
       (report/error "Creation Dates", "Exception during creation dates query:\n%s", (report/cause-trace t))
       {:status 500})))

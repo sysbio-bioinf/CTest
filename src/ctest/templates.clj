@@ -10,43 +10,12 @@
   (:require
     [clojure.string :as str]
     [selmer.parser :as parser]
-    [selmer.filters :as sel-filter]
     [cemerick.friend :as friend]
     [ctest.config :as c]
     [ctest.db.crud :as crud]
     [ctest.version :as v]
     [ctest.reporting :as report]))
 
-;; Filter functions for selmer (templating)
-(sel-filter/add-filter! :even (fn [counter] (even? counter)))
-
-(sel-filter/add-filter! :one (fn [value] (some-> value (= 1))))
-
-
-(defn ifnotify-handler
-  "Selmer tag with arguments [project, user] that checks whether the user shall be notified for the project."
-  [args context-map content]
-  (let [[project, user] (->> args
-                          (mapv
-                            (fn [arg]
-                              (or
-                                (->> arg keyword (get context-map))
-                                arg))))]
-    (if (and (map? project) (string? user) (= 1 (get-in project [:notifiedusers, user])))
-      (get-in content [:ifnotify, :content])
-      (get-in content [:else, :content]))))
-
-
-(parser/add-tag! :ifnotify #'ifnotify-handler :else :endifnotify)
-
-
-(sel-filter/add-filter! :signal-color
-  (fn [action-type]
-    (case action-type
-      "create" "success"
-      "delete" "warning"
-      "update" "info"
-      "default")))
 
 
 (defn- index-of-current

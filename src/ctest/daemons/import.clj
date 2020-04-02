@@ -6,7 +6,7 @@
 ; the terms of this license.
 ; You must not remove this notice, or any other, from this software.
 
-(ns ctest.import-daemon
+(ns ctest.daemons.import
   (:require [clojure.data.csv :as csv]
             [clojure.java.io :as io]
             [clojure.string :as str]
@@ -139,9 +139,9 @@
     (every? str/blank? row)))
 
 (defn import-csv-file
-  [{:keys [mandatory-columns] :as import-config}, csv-file]
+  [{:keys [mandatory-columns, column-separator] :as import-config}, csv-file]
   (report/info "CSV import", "Import from %s" csv-file)
-  (let [rows (vec (remove blank-row? (csv/read-csv (io/reader csv-file) :separator \;)))
+  (let [rows (vec (remove blank-row? (csv/read-csv (io/reader csv-file) :separator column-separator)))
         header (first rows)
         column-names (mapv #(-> % str/trim str/lower-case keyword) header)
         content-rows (rest rows)
@@ -169,8 +169,9 @@
   [watch-state]
   (loop []
     (when-not (.isInterrupted (Thread/currentThread))
-      (let [{:keys [negative-result, date-format]} (c/import-config)
+      (let [{:keys [negative-result, date-format, column-separator]} (c/import-config)
             import-config {:mandatory-columns (c/import-csv-columns)
+                           :column-separator column-separator
                            :negative-result negative-result
                            :date-id-converter (when (c/order-number-append-date?)
                                                 (create-date-id-converter date-format))}

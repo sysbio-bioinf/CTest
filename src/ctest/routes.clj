@@ -102,8 +102,8 @@
   (core/context "/reports" []
     (friend/wrap-authorize
       (core/routes
-        (core/GET "/list" request
-          (reports-action/report-list))
+        (core/GET "/list" [type, context :as request]
+          (reports-action/report-list type, context))
         (core/GET "/views" request
           (reports-action/views-per-day))
         (core/GET "/test-dates" request
@@ -138,11 +138,16 @@
 (defn app-routes
   []
   (core/routes
-    (core/GET ["/track/:urlTrackingNr"] [urlTrackingNr, trackingNr :as request]
+    (core/GET ["/track/:urlTrackingNr"] [urlTrackingNr, trackingNr, app :as request]
       (let [tnr (cond
+                  (some-> urlTrackingNr (patient-action/valid-tracking-number?)) urlTrackingNr
                   (some-> trackingNr (patient-action/valid-tracking-number?)) trackingNr
-                  (some-> urlTrackingNr (patient-action/valid-tracking-number?)) urlTrackingNr)]
-        (patient-action/lookup-test-status request, tnr)))
+                  ; none of the two is valid, choose one that is specified non-empty
+                  ; (validity is checked later again for error message display)
+                  :else (or (not-empty urlTrackingNr) (not-empty trackingNr)))]
+        (if (some? app)
+          (patient-action/app-test-status tnr)
+          (patient-action/lookup-test-status request, tnr))))
     (core/GET ["/track:sep" :sep #"/?"] [sep, trackingNr :as request]
       (patient-action/lookup-test-status request, trackingNr))
     ; serve resources from "public/"
