@@ -9,8 +9,8 @@ The primary aim of this approach was to reduce the burden of clinical staff in t
 ## Table of Contents
    
   * [Getting Started](#getting-started)
-  * [Prerequisites](#prerequisites)
-  * [Initialisation and Startup](#initialisation-and-startup)
+     * [Prerequisites](#prerequisites)
+     * [Initialisation and Startup](#initialisation-and-startup)
   * [Configuration](#configuration)
      * [General Settings](#general-settings)
      * [Server Settings for CTest](#server-settings-for-ctest)
@@ -34,7 +34,7 @@ The primary aim of this approach was to reduce the burden of clinical staff in t
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. 
+These instructions will explain you how to setup a local CTest instance on your computer for testing purposes. 
 
 Download a release version of CTest: 
 
@@ -45,7 +45,7 @@ Older versions:
 * [Version 0.2.0](https://github.com/sysbio-bioinf/CTest/releases/download/0.2.0/ctest-0.2.0.jar)
 
 
-## Prerequisites
+### Prerequisites
 
 CTest has been tested with **Java 8**.
 
@@ -59,7 +59,7 @@ $ keytool -genkey -keyalg RSA -alias selfsigned -keystore keystore.jks -storepas
 ```
 *A self-signed certificate has the disadvantage that the users are warned by their web browsers that their connection is not secure. Hence, this should only be used for test setups.*
 
-## Initialisation and Startup
+### Initialisation and Startup
 
 CTest is initialised via `java -jar ctest-<version>.jar init` which allows the following parameters:
 
@@ -99,7 +99,7 @@ The default configuration will start CTest only on the localhost -- to be able t
 To use different configuration files, you can specify the configuration to use as follows:
 
 ``` shell
-$ java -jar ctest <version>.jar run -c another-ctest.conf
+$ java -jar ctest-<version>.jar run -c another-ctest.conf
 ```
 
 ## Configuration
