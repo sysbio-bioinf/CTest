@@ -41,6 +41,9 @@ Download a release version of CTest:
 
 * [Version 0.2.2](https://github.com/sysbio-bioinf/CTest/releases/download/0.2.2/ctest-0.2.2.jar)
 
+For testing purposes also download the [`keystore.jks`](https://github.com/sysbio-bioinf/CTest/raw/master/keystore.jks)
+or [disable SSL/https](#server-settings-for-ctest) usage.
+
 
 ### Prerequisites
 
