@@ -474,6 +474,54 @@ The `:server-config` of the CTest configuration has to look like:
  ... }
 ```
 
+### Protection from Brute-Force Attacks
+
+[Fail2Ban](https://github.com/fail2ban/fail2ban) can be used as a protection from
+brute-force attacks on logins and tracking URLs.
+The following instructions describe the setup of Fail2Ban for CTest on a Linux server.
+The configuration consist of at least 3 files:
+ * [`filter.d/ctest.conf`](tools/fail2ban/filter.d/ctest.conf): 
+   defines the filter to detect failed login attempts
+ * [`filter.d/ctest-tracking.conf`](tools/fail2ban/filter.d/ctest-trackig.conf): 
+   defines the filter to detect tracking URL guessing/enumeration attempts
+ * [`jail.local`](tools/fail2ban/jail.local):
+   defines the rules for banning IPs due to brute-force attacks on logins or tracking URLs
+  
+A fourth file is required, when you are using a reverse proxy that is running on a different server
+than CTest:
+ * [`action.d/iptables-reverse-proxy.conf`](tools/fail2ban/action.d/iptables-reverse-proxy.conf):
+   defines the actions to ban and unban the source IPs (`X-Forwarded-For:`)
+   instead of the proxy IP
+   
+Apart from `jail.local`, you can just copy the files to the configuration directory of Fail2Ban
+`/etc/fail2ban`. If you already use Fail2Ban, you will have to merge our `jail.local` with your current `jail.local`.
+
+There are a few parameters that you can adjust to your needs in `jail.local`, 
+e.g. for preventing login brute-force attacks:
+```
+[ctest]
+
+enabled  = true
+#ignoreip = whitelisted ips
+port     = 80
+protocol = tcp
+filter   = ctest
+logpath  = /opt/ctest/ctest.log
+maxretry = 3
+bantime  = 180
+findtime = 180
+banaction = iptables-reverse-proxy[name = ctest, port = http, protocol = tcp]
+```
+
+* `logpath` specifies where the CTest log file is located.
+* `banaction` only needs to be specified when the proxy is on a different server than CTest.
+* `maxretry` specifies the number of failed logins until the IP is banned (here: 3).
+* `bantime` specifies the ban duration in seconds (here: 3 minutes).
+* `findtime` specifies which failed attempts count for a ban. 
+  In this case failed attempts that are longer ago than 3 minutes do not count anymore.
+* `port` needs to be adjusted when you use a different one.
+
+After everything is setup, reload Fail2Ban via `fail2ban-client reload`.
 
 ## Using CTest
 

@@ -1,0 +1,27 @@
+[ctest]
+
+enabled  = true
+#ignoreip = whitelisted ips
+port     = 80
+protocol = tcp
+filter   = ctest
+logpath  = /opt/ctest/ctest.log
+maxretry = 3
+bantime  = 180
+findtime = 180
+banaction   = iptables-reverse-proxy[name = ctest, port = http, protocol = tcp]
+
+
+
+[ctest-tracking]
+
+enabled  = true
+#ignoreip = whitelisted ips
+port     = 80
+protocol = tcp
+filter   = ctest-tracking
+logpath  = /opt/ctest/ctest.log
+maxretry = 5
+bantime  = 300
+findtime = 300
+banaction   = iptables-reverse-proxy[name = ctest, port = http, protocol = tcp]
