@@ -333,9 +333,9 @@
   (:backup @ctest-config))
 
 
-(derive ::admin ::user)
-(derive ::admin ::reporter)
-(derive ::configadmin ::admin)
+(derive :role/admin :role/user)
+(derive :role/admin :role/reporter)
+(derive :role/configadmin :role/admin)
 
 (defn set-daemon
   [daemon]

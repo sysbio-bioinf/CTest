@@ -28,7 +28,7 @@
 
         var newUserSuccess = function (e) {
             var user = e;
-            user['role'] = user['role'] === ":traqbio.config/user" ? "User" : ( user['role'] === ":traqbio.config/reporter" ? "Reporter" : "Admin");
+            user['role'] = user['role'] === ":role/user" ? "User" : ( user['role'] === ":role/reporter" ? "Reporter" : "Admin");
             var message = {
                 message: "Added user " + user['username']
             };
@@ -86,7 +86,7 @@
                     table.cell('#row_'+user['username']+' .cell-fullname').data(user['fullname']);
                 }
                 if (user['role']){
-                    var role = user['role'] === ":traqbio.config/user" ? "User" : ( user['role'] === ":traqbio.config/reporter" ? "Reporter" : "Admin");
+                    var role = user['role'] === ":role/user" ? "User" : ( user['role'] === ":role/reporter" ? "Reporter" : "Admin");
                     table.cell('#row_'+user['username']+' .cell-roles').data(role);
                 }
             }

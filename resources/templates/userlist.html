@@ -30,9 +30,9 @@
                         <div class="form-group">
                             <label for="newRole">Select Role</label>
                             <select id="newRole" name="role" class="form-control">
-                                <option value=":ctest.config/user">User</option>
-                                <option value=":ctest.config/reporter">Reporter</option>
-                                <option value=":ctest.config/admin">Admin</option>
+                                <option value=":role/user">User</option>
+                                <option value=":role/reporter">Reporter</option>
+                                <option value=":role/admin">Admin</option>
                             </select>
                         </div>
                         <button type="submit" class="btn btn-default">Create</button>
@@ -61,16 +61,16 @@
                         <tr id="row_{{user.username}}">
                             <td class="cell-username">{{user.username}}</td>
                             <td class="cell-fullname">{{user.fullname}}</td>
-                            <td class="cell-roles">{% ifequal user.role ":ctest.config/user" %}User{% else %}{% ifequal
-                                user.role ":ctest.config/reporter" %}Reporter{% else %}Admin{% endifequal %}{%
+                            <td class="cell-roles">{% ifequal user.role ":role/user" %}User{% else %}{% ifequal
+                                user.role ":role/reporter" %}Reporter{% else %}Admin{% endifequal %}{%
                                 endifequal %}</td>
                             <td>
-                                <a class="btn btn-default" href="{{serverRoot}}/staff/usr/{{user.username}}" data-toggle="modal" data-target="#edit-dialog" {% ifequal user.role ":ctest.config/configadmin" %}{% if request.isConfigAdmin %}enabled{% else %}disabled{% endif %}{% endifequal %}>
+                                <a class="btn btn-default" href="{{serverRoot}}/staff/usr/{{user.username}}" data-toggle="modal" data-target="#edit-dialog" {% ifequal user.role ":role/configadmin" %}{% if request.isConfigAdmin %}enabled{% else %}disabled{% endif %}{% endifequal %}>
                                     <span class="glyphicon glyphicon-pencil"></span>
                                 </a>
                             </td>
                             <td>
-                                <button class="btn btn-default btn-delete-user" type="button" data-user="{{user.username}}" {% ifequal user.role ":ctest.config/configadmin" %}{% if request.isConfigAdmin %}enabled{% else %}disabled{% endif %}{% endifequal %}>
+                                <button class="btn btn-default btn-delete-user" type="button" data-user="{{user.username}}" {% ifequal user.role ":role/configadmin" %}{% if request.isConfigAdmin %}enabled{% else %}disabled{% endif %}{% endifequal %}>
                                     <span class="glyphicon glyphicon-trash"></span>
                                 </button>
                             </td>

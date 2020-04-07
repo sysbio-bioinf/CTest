@@ -27,7 +27,7 @@
   [{:keys [username] :as user}]
   (let [editing-role (:role (friend/current-authentication)),
         user-role (edn/read-string (:role (crud/read-user username)))]
-    (if (or (not= user-role :ctest.config/configadmin) (= editing-role :ctest.config/configadmin))
+    (if (or (not= user-role :role/configadmin) (= editing-role :role/configadmin))
       (if (crud/put-user user)
         {:body user :status 200}
         {:body {:error (format "There is no user named \"%s\"." username)} :status 404})
@@ -51,7 +51,7 @@
    :action-type :delete}
   [username]
   (cond
-    (and (= (:role (crud/read-user username)) :ctest.config/configadmin) (not= (:role (friend/current-authentication)) :ctest.config/configadmin))
+    (and (= (:role (crud/read-user username)) :role/configadmin) (not= (:role (friend/current-authentication)) :role/configadmin))
       {:status 403, :body {:error "You are not allowed to delete that user."}}
     (= (:username (friend/current-authentication)) username)
       {:status 403, :body {:error "You must not delete yourself."}}

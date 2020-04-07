@@ -31,9 +31,9 @@
   (let [auth (friend/current-authentication)]
     (assoc request
       :userLogin (:username auth),
-      :isAdmin (contains? (:roles auth) ::c/admin),
-      :isUser (contains? (:roles auth) ::c/user),
-      :isConfigAdmin (contains? (:roles auth) ::c/configadmin),
+      :isAdmin (contains? (:roles auth) :role/admin),
+      :isUser (contains? (:roles auth) :role/user),
+      :isConfigAdmin (contains? (:roles auth) :role/configadmin),
       :isAuthenticated (not (nil? auth)))))
 
 (defn add-server-root

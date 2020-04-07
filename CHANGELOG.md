@@ -1,3 +1,10 @@
+# Version 0.2.2
+
+* Fixes a bug in user management dialog.
+
+* Removes unnecessary JavaScript includes.
+
+
 # Version 0.2.1
 
 * Adds an *app access*. By appending `?app=true` to a tracking URL, CTest will only return "negative" or "in progress" instead of the complete HTML.

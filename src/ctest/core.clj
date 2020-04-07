@@ -213,7 +213,7 @@
     ;; create db
     (when (init/create-database-if-needed (:data-base-name options))
       ; database had to be created, add admin user
-      (crud/put-user {:username (:admin options), :password (:password options) :role ::c/configadmin})
+      (crud/put-user {:username (:admin options), :password (:password options) :role :role/configadmin})
       (report/info "Initialization", "CTest instance created."))))
 
 

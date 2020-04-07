@@ -26,10 +26,10 @@
             <div class="form-group">
                 <label for="newRole" class="col-sm-2 control-label">Select Role</label>
                 <div class="col-sm-10">
-                    <select id="newRole" name="role" class="form-control" {% ifequal user.role ":ctest.config/configadmin" %}disabled{% endifequal %}>
-                        <option value=":ctest.config/user" {% ifequal user.role ":ctest.config/user" %}selected{% endifequal %}>User</option>
-                        <option value=":ctest.config/reporter" {% ifequal user.role ":ctest.config/reporter" %}selected{% endifequal %}>Reporter</option>
-                        <option value=":ctest.config/admin" {% ifequal user.role ":ctest.config/admin" %}selected{% else %}{% ifequal user.role ":ctest.config/configadmin" %}selected{% endifequal %}{% endifequal %}>Admin</option>
+                    <select id="newRole" name="role" class="form-control" {% ifequal user.role ":role/configadmin" %}disabled{% endifequal %}>
+                        <option value=":role/user" {% ifequal user.role ":role/user" %}selected{% endifequal %}>User</option>
+                        <option value=":role/reporter" {% ifequal user.role ":role/reporter" %}selected{% endifequal %}>Reporter</option>
+                        <option value=":role/admin" {% ifequal user.role ":role/admin" %}selected{% else %}{% ifequal user.role ":role/configadmin" %}selected{% endifequal %}{% endifequal %}>Admin</option>
                     </select>
                 </div>
             </div>

@@ -1,12 +1,5 @@
 {% extends "templates/base.html" %}
 
-{% block header-scripts %}
-<link rel="stylesheet" type="text/css" href="{{serverRoot}}/libs/toggle-switch/toggle-switch.css">
-<link rel="stylesheet" type="text/css" href="{{serverRoot}}/libs/datatables/css/jquery.dataTables.min.css">
-{% endblock %}
-
-{% block nav-prj-create %}class="active"{% endblock %}
-
 {% block content %}
 <div class="row">
 		<div class="col-md-10 col-md-offset-1">
@@ -92,13 +85,6 @@
 {% endblock %}
 
 {% block footer-scripts %}
-
-<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/bootstrap/js/validator.min.js"></script>
-<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/datatables/js/jquery.dataTables.min.js"></script>
-<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/datatables-bootstrap/js/dataTables.bootstrap.min.js"></script>
-<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/jquery/jquery.serialize-object.min.js"></script>
-<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/jquery/mustache.js"></script>
-<script type="text/javascript" language="javascript" src="{{serverRoot}}/js/createProject.js"></script>
 <script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/print/print.min.js"></script>
 <script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/print/imagesloaded.pkgd.min.js"></script>
 <script type="text/javascript" language="javascript" >

@@ -93,9 +93,9 @@
 
 (core/defroutes api-routes
   (core/context "/patient" []
-    (friend/wrap-authorize patient-routes, #{::c/user}))
+    (friend/wrap-authorize patient-routes, #{:role/user}))
   (core/context "/usr" []
-    (friend/wrap-authorize user-routes, #{::c/admin})))
+    (friend/wrap-authorize user-routes, #{:role/admin})))
 
 
 (core/defroutes reports-routes
@@ -112,7 +112,7 @@
           (reports-action/delete-reports (:body request)))
         (core/GET "/system" request
           (reports-action/system-info)))
-      #{::c/reporter})))
+      #{:role/reporter})))
 
 
 (defn wrap-cache-control
@@ -168,7 +168,7 @@
 
           (json/wrap-json-response
             (json/wrap-json-body api-routes {:keywords? true})))
-        #{::c/user}))
+        #{:role/user}))
     ; reports
     (json/wrap-json-response
       (json/wrap-json-body reports-routes {:keywords? true}))

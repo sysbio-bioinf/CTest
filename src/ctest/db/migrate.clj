@@ -62,17 +62,19 @@
 
 (defn insert-table-data
   [db-conn, table-data-map]
-  (reduce-kv
-    (fn [_, table, rows]
-      (let [table-cols (table-columns db-conn, table)]
-        (reduce
-          (fn [_, row-data]
-            (jdbc/insert! db-conn, table, (select-keys row-data table-cols))
-            nil)
-          nil
-          rows)))
-    nil
-    table-data-map))
+  (let [existing-tables (table-set db-conn)]
+    (reduce-kv
+      (fn [_, table, rows]
+        (when (contains? existing-tables table)
+          (let [table-cols (table-columns db-conn, table)]
+            (reduce
+              (fn [_, row-data]
+                (jdbc/insert! db-conn, table, (select-keys row-data table-cols))
+                nil)
+              nil
+              rows))))
+      nil
+      table-data-map)))
 
 
 (defn import-data

@@ -39,11 +39,7 @@ These instructions will explain you how to setup a local CTest instance on your 
 
 Download a release version of CTest: 
 
-* [Version 0.2.1](https://github.com/sysbio-bioinf/CTest/releases/download/0.2.1/ctest-0.2.1.jar)
-
-Older versions:
-
-* [Version 0.2.0](https://github.com/sysbio-bioinf/CTest/releases/download/0.2.0/ctest-0.2.0.jar)
+* [Version 0.2.2](https://github.com/sysbio-bioinf/CTest/releases/download/0.2.2/ctest-0.2.2.jar)
 
 
 ### Prerequisites
