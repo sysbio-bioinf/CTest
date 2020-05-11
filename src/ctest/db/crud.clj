@@ -53,12 +53,14 @@
 
 (defn has-user?
   "Exists given user in database?"
-  [user-name]
-  (boolean
-    (seq
-      (jdbc/query
-        (c/db-connection)
-        ["select username from user where username = ?" user-name]))))
+  ([user-name]
+   (has-user? (c/db-connection), user-name))
+  ([db-conn, user-name]
+   (boolean
+     (seq
+       (jdbc/query
+         db-conn
+         ["select username from user where username = ?" user-name])))))
 
 
 (defn- encrypt-password
@@ -72,14 +74,21 @@
   "Inserts or updates a user.
   user-map needs to contain :username, :password and :role.
   :username is also the primary key. Password is safed as bcypt hash."
-  [user-map]
-  (when-let [user-name (:username user-map)]
-    (let [user (encrypt-password user-map)]
-      (if (has-user? user-name)
-        (db-update!
-          (c/db-connection) :user user ["username = ?" user-name])
-        (db-insert!
-          (c/db-connection) :user user)))))
+  ([user-map]
+   (put-user (c/db-connection), user-map))
+  ([db-conn, user-map]
+   (when-let [user-name (:username user-map)]
+     (let [user (encrypt-password user-map)]
+       (if (has-user? db-conn, user-name)
+         (db-update!
+           db-conn :user user ["username = ?" user-name])
+         (db-insert!
+           db-conn :user user))))))
+
+
+(defn update-user-role
+  [db-conn, {:keys [username, role] :as user-map}]
+  (jdbc/update! db-conn :user, {:role (str role)} ["username = ?" username]))
 
 
 (defn- all-roles
@@ -104,7 +113,9 @@
   "Returns a full user-map and applys a funtrion to it"
   [user-name fn]
   (jdbc/query
-    (c/db-connection) ["SELECT * FROM user WHERE username = ?" user-name] :result-set-fn fn))
+    (c/db-connection)
+    ["SELECT * FROM user WHERE username = ?" user-name]
+    {:result-set-fn fn}))
 
 
 (defn authentication-map
@@ -121,8 +132,19 @@
 
 (defn read-users
   "Returns a collection of user-maps"
+  ([]
+   (read-users (c/db-connection)))
+  ([db-conn]
+   (jdbc/query db-conn ["SELECT username, fullname, role FROM user"])))
+
+
+(defn user-role-set
+  "Returns a collection of user-maps"
   []
-  (jdbc/query (c/db-connection) ["SELECT username, fullname, role FROM user"]))
+  (jdbc/query (c/db-connection)
+    ["SELECT DISTINCT role FROM user"]
+    {:row-fn (comp edn/read-string :role)
+     :result-set-fn set}))
 
 
 (defn delete-user
@@ -151,8 +173,8 @@
    (jdbc/with-db-transaction [t-conn db-conn]
      (jdbc/query t-conn
        ["SELECT trackingnr FROM patient"]
-       :result-set-fn set
-       :row-fn :trackingnr))))
+       {:result-set-fn set
+        :row-fn :trackingnr}))))
 
 
 (defn read-patient-ordernr-set
@@ -162,8 +184,8 @@
    (jdbc/with-db-transaction [t-conn db-conn]
      (jdbc/query t-conn
        "SELECT ordernr FROM patient"
-       :row-fn :ordernr
-       :result-set-fn set))))
+       {:row-fn :ordernr
+        :result-set-fn set}))))
 
 (defn read-patient-by-order-number
   "Lookup the patient data with the specified order number."
@@ -173,7 +195,7 @@
    (jdbc/with-db-transaction [t-conn db-conn]
      (jdbc/query t-conn
        ["SELECT * FROM patient WHERE patient.ordernr = ?" order-number]
-       :result-set-fn first))))
+       {:result-set-fn first}))))
 
 
 (defn delete-patient
@@ -190,7 +212,7 @@
    (jdbc/with-db-transaction [t-conn db-conn]
      (jdbc/query t-conn
        ["SELECT * FROM patient WHERE patient.trackingnr = ?" tracking-number]
-       :result-set-fn first))))
+       {:result-set-fn first}))))
 
 
 (defn create-patient
@@ -250,7 +272,7 @@
   ([db-conn, report-ids]
    (log/infof "Deleted reports with ids: %s" (str/join ", " (sort report-ids)))
    (jdbc/with-db-transaction [t-conn db-conn]
-     (jdbc/execute! t-conn, (into ["DELETE FROM reports WHERE id = ?"] (mapv vector report-ids)), :multi? true))))
+     (jdbc/execute! t-conn, (into ["DELETE FROM reports WHERE id = ?"] (mapv vector report-ids)), {:multi? true}))))
 
 
 (defn count-view
@@ -277,4 +299,47 @@
   ([db-conn]
    (jdbc/with-db-transaction [t-conn db-conn]
      (jdbc/query t-conn "SELECT created FROM patient"
-       :row-fn :created))))
+       {:row-fn :created}))))
+
+(defn status-encoding-set
+  []
+  (jdbc/query (c/db-connection)
+    ["SELECT DISTINCT status FROM patient"]
+    {:row-fn :status
+     :result-set-fn set}))
+
+
+(defn update-status
+  [db-conn, renaming-map]
+  (jdbc/with-db-transaction [t-conn db-conn]
+    (doseq [[old-status, new-status] renaming-map]
+      (jdbc/update! t-conn, :patient {:status new-status} ["status = ?" old-status]))))
+
+
+(defn patients-with-qrcode-prefix?
+  ([prefix]
+   (patients-with-qrcode-prefix? (c/db-connection), prefix))
+  ([db-conn, prefix]
+   (jdbc/with-db-connection [t-conn db-conn]
+     (jdbc/query t-conn
+       ["SELECT ordernr FROM patient WHERE qrcode LIKE ?", (str prefix "%")]
+       {:result-set-fn (comp boolean seq)}))))
+
+
+(defn remove-qrcode-prefix
+  ([prefix]
+   (remove-qrcode-prefix (c/db-connection), prefix))
+  ([db-conn, prefix]
+   (jdbc/with-db-transaction [t-conn db-conn]
+     (jdbc/execute! t-conn
+       ["UPDATE patient SET qrcode = REPLACE(qrcode, ?, '')", prefix]))))
+
+
+(defn update-patient-status
+  [db-conn, status-data-list]
+  (jdbc/db-do-prepared db-conn
+    (into
+      ["UPDATE patient SET status = ?, statusupdated = ? WHERE ordernr = ?"]
+      (map (juxt :status, :statusupdated, :ordernr))
+      status-data-list)
+    {:multi? true}))

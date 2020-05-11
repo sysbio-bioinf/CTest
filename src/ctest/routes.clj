@@ -151,12 +151,12 @@
     (core/GET ["/track:sep" :sep #"/?"] [sep, trackingNr :as request]
       (patient-action/lookup-test-status request, trackingNr))
     ; serve resources from "public/"
-    (wrap-cache-control (wrap-not-modified (wrap-content-type (route/resources "/"))))
+    (-> (route/resources "/") (wrap-content-type) (wrap-not-modified) (wrap-cache-control))
     ; login
     (core/GET "/login" request (templates/login request))
     (friend/logout (core/ANY "/logout" request (response/redirect (c/server-location "/"))))
     ; branding resources
-    (route/files "/branding" {:root (c/branding-path)})
+    (-> (route/files "/branding" {:root (c/branding-path)}) (wrap-content-type) (wrap-not-modified) (wrap-cache-control))
     ; staff routes, require login
     (core/context "/staff" []
       (friend/wrap-authorize

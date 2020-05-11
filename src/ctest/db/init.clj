@@ -19,10 +19,10 @@
       db-conn
       (jdbc/create-table-ddl
         :user
-        [:username "TEXT PRIMARY KEY"]
-        [:password "TEXT"]
-        [:fullname "TEXT"]
-        [:role "TEXT"]))))
+        [[:username "TEXT PRIMARY KEY"]
+         [:password "TEXT"]
+         [:fullname "TEXT"]
+         [:role "TEXT"]]))))
 
 (defn create-patient-table
   [db-conn, table-set]
@@ -31,12 +31,12 @@
       db-conn
       (jdbc/create-table-ddl
         :patient
-        [:ordernr "TEXT PRIMARY KEY"]
-        [:created "INTEGER"]
-        [:trackingnr "TEXT"]
-        [:status "TEXT"]
-        [:statusupdated "INTEGER"]
-        [:qrcode "TEXT"]))))
+        [[:ordernr "TEXT PRIMARY KEY"]
+         [:created "INTEGER"]
+         [:trackingnr "TEXT"]
+         [:status "TEXT"]
+         [:statusupdated "INTEGER"]
+         [:qrcode "TEXT"]]))))
 
 (defn create-reports-table
   [db-conn, table-set]
@@ -45,11 +45,11 @@
       db-conn
       (jdbc/create-table-ddl
         :reports
-        [:id "INTEGER PRIMARY KEY AUTOINCREMENT"]
-        [:timestamp "INTEGER"]
-        [:type "TEXT"]
-        [:context "TEXT"]
-        [:message "TEXT"]))))
+        [[:id "INTEGER PRIMARY KEY AUTOINCREMENT"]
+         [:timestamp "INTEGER"]
+         [:type "TEXT"]
+         [:context "TEXT"]
+         [:message "TEXT"]]))))
 
 
 (defn create-views-table
@@ -59,8 +59,8 @@
       db-conn
       (jdbc/create-table-ddl
         :views
-        [:date "TEXT PRIMARY KEY"]
-        [:count "INTEGER"]))))
+        [[:date "TEXT PRIMARY KEY"]
+         [:count "INTEGER"]]))))
 
 
 (defn existing-tables

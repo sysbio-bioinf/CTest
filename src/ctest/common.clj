@@ -102,3 +102,21 @@
                                              (cond-> []
                                                replace?
                                                (conj StandardCopyOption/REPLACE_EXISTING)))))
+
+
+(defn cause
+  [^Throwable t]
+  (loop [^Throwable t t]
+    (if-let [c (.getCause t)]
+      (recur c)
+      t)))
+
+
+(defn initial-cause?
+  [class, exception]
+  (instance? class (cause exception)))
+
+(defn exit
+  [status msg]
+  (println msg)
+  (System/exit status))

@@ -10,10 +10,13 @@
   (:require
     [clojure.string :as str]
     [clojure.pprint :refer [pprint]]
+    [clojure.stacktrace :as st]
     [clojure.java.io :as io]
-    [ctest.common :as common])
+    [ctest.common :as common]
+    [clojure.tools.logging :as log])
   (:import
-    com.mchange.v2.c3p0.ComboPooledDataSource))
+    com.mchange.v2.c3p0.ComboPooledDataSource
+    (org.apache.log4j PropertyConfigurator)))
 
 
 
@@ -46,9 +49,8 @@
               :interval 60}
      :server-config ^:replace {:port 8000
                                :host "localhost"
-                               :ssl? true
+                               :ssl? false
                                :ssl-port 8443
-                               :forwarded? false
                                :server-root ""
                                :proxy-url nil
                                :keystore "keystore.jks"
@@ -86,10 +88,10 @@
 
 (defn tracking-server-domain
   []
-  (let [{:keys [proxy-url, host, port, ssl-port]} (server-config)]
+  (let [{:keys [proxy-url, host, port, ssl?, ssl-port]} (server-config)]
     (or
       proxy-url
-      (if ssl-port
+      (if ssl?
         (cond-> (str "https://" host) (not= ssl-port 443) (str ":" ssl-port))
         (cond-> (str "http://" host) (not= port 80) (str ":" port))))))
 
@@ -401,3 +403,87 @@
                        (order-number-append-date?)
                        (conj date-column))]
     (mapv #(-> % str/trim str/lower-case keyword) column-names)))
+
+
+(def ^:const db-encoding-in-progress "in progress")
+(def ^:const db-encoding-negative "negative")
+
+(defn valid-status-encoding?
+  [x]
+  (or
+    (= x db-encoding-negative)
+    (= x db-encoding-in-progress)))
+
+(defn negative-status?
+  [s]
+  (= s db-encoding-negative))
+
+
+(defn configure-logging
+  "Configures the logging for ctest. Log level and log file can be specified in the configuration."
+  [{:keys [log-level, log-file] :as config}]
+  (let [props (doto (System/getProperties)
+                (.setProperty "log4j.rootLogger" (format "%s, file" (-> log-level name str/upper-case)))
+                (.setProperty "log4j.appender.file" "org.apache.log4j.RollingFileAppender")
+                (.setProperty "log4j.appender.file.File" (str log-file))
+                (.setProperty "log4j.appender.file.MaxFileSize" "4MB")
+                (.setProperty "log4j.appender.file.MaxBackupIndex" "5")
+                (.setProperty "log4j.appender.file.layout" "org.apache.log4j.PatternLayout")
+                (.setProperty "log4j.appender.file.layout.ConversionPattern" "%d{yyyy.MM.dd HH:mm:ss} %5p %c: %m%n")
+                ; jetty is too chatty
+                (.setProperty "log4j.logger.org.eclipse.jetty" "INFO"))]
+    (PropertyConfigurator/configure props))
+  nil)
+
+
+(defn read-config
+  [config-file]
+  (try
+    ; we trust anyone with access to the config file, so just load it
+    (load-file config-file)
+    (catch Throwable t
+      (let [log-file "startup-errors.log"]
+        (binding [log/*force* :direct]
+          (configure-logging {:log-level :info, :log-file log-file})
+          (log/errorf "Error when reading config file \"%s\":\n%s"
+            config-file
+            (with-out-str (st/print-cause-trace t)))
+          (common/exit 2
+            (format "Error when reading config file \"%s\": \"%s\"\nFor details see \"%s\"."
+              config-file
+              (.getMessage t)
+              log-file)))))))
+
+
+(defn db-exists?
+  [config-filename, db-filename]
+  (if (.exists (io/file db-filename))
+    true
+    (let [msg (format
+                (str
+                  "The database file \"%s\" does not exist!\n"
+                  "You have the following two options to fix that:\n"
+                  "(1) Fix the path to the existing database file in the configuration \"%s\".\n"
+                  "(2) Rerun the ctest initialisation.")
+                (-> db-filename io/file .getAbsolutePath),
+                (-> config-filename io/file .getAbsolutePath))]
+      (println msg)
+      (log/error "Startup" msg)
+      false)))
+
+
+(defn read+setup-config
+  [config-file]
+  (let [{:keys [data-base-name] :as config} (read-config config-file)]
+    (update-config config)
+    (if-let [errors (check-config)]
+      (do
+        (println
+         (format "The configuration file \"%s\" contains the following errors:\n  %s"
+           config-file
+           (str/join "\n  " errors)))
+        false)
+      (do
+        (configure-logging config)
+        (update-db-name data-base-name)
+        (db-exists? config-file, data-base-name)))))

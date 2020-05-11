@@ -39,7 +39,7 @@ These instructions will explain you how to setup a local CTest instance on your 
 
 Download a release version of CTest: 
 
-* [Version 0.2.2](https://github.com/sysbio-bioinf/CTest/releases/download/0.2.2/ctest-0.2.2.jar)
+* [Version 0.3.0](https://github.com/sysbio-bioinf/CTest/releases/download/0.3.0/ctest-0.3.0.jar)
 
 For testing purposes also download the [`keystore.jks`](https://github.com/sysbio-bioinf/CTest/raw/master/keystore.jks)
 or [disable SSL/https](#server-settings-for-ctest) usage.
@@ -47,7 +47,7 @@ or [disable SSL/https](#server-settings-for-ctest) usage.
 
 ### Prerequisites
 
-CTest has been tested with **Java 8**.
+CTest has been tested with **Java 8, 11 and 14.**
 
 CTest should be run with Transport Layer Security (TLS).
 Typically, you will run CTest behind an existing web server (apache, nginx,...) that already provides TLS.
@@ -162,7 +162,6 @@ Other settings together with a short description can be found in the [ring libra
   :server-root "",
 
   :proxy-url nil,
-  :forwarded? false,
 
   :ssl? true,
   :ssl-port 8443,
@@ -188,9 +187,6 @@ The following properties are used:
 
 `:proxy-url`
  : When CTest is used behind a proxy, you need to specify the URL under which CTest is accessible at the proxy.
-
-`:forwarded?`
- : When CTest is used behind a proxy, you need to set this to `true`. Otherwise, keep `false`.
 
 `:ssl?`
  : enables or disables transport encryption (aka "https").
@@ -272,6 +268,7 @@ You can adjust the settings in the configuration file:
 
 If the configuration does not contain a `:backup` entry, CTest will not do any backup.
 
+See [Restore a backup](#restore-a-backup) for instructions to restore a database backup. 
 
 
 ### Branding
@@ -421,7 +418,6 @@ The `:server-config` of the CTest configuration has to look like:
   :server-root "",
 
   :proxy-url "ctest.your.domain.tld",
-  :forwarded? true,
 
   :ssl? false},
  ... }
@@ -468,7 +464,6 @@ The `:server-config` of the CTest configuration has to look like:
   :server-root "ctest",
 
   :proxy-url "your.domain.tld",
-  :forwarded? true,
 
   :ssl? false},
  ... }
@@ -565,6 +560,34 @@ The following queries can be performed:
 4. GET `/reports/test-dates` to get the list of test dates for further statistical analysis.
 
 5. GET `/reports/system` to get information about the current memory consumption and CPU usage.
+
+#### Restore a backup
+
+In case something went wrong and you want to restore a backup,
+this can be achieved with the commandline task `import` as follows:
+
+```bash
+mv ctest.db ctest.db.old
+java -jar ctest-<version>.jar import ctest.db backups/ctest-db-backup-YYYYMMDD-HHmm.data
+```
+
+The `import` tasks needs to create a new database.
+This is the reason why `ctest.db` is renamed in advance.
+
+#### Upgrade to a new CTest version
+
+If you upgrade to a new CTest version, e.g. from 0.1.3 or 0.2.x to 0.3.x,
+then the CTest database might need an upgrade.
+This can be done using the `upgrade` task as follows:
+
+```bash
+mv ctest.db ctest.db.old
+java -jar ctest-<version>.jar upgrade ctest.conf
+```
+
+This task checks whether any update needs to be performed and applied the required ones.
+
+
 
 ### User
 

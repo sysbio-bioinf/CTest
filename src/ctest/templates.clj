@@ -128,7 +128,7 @@
   (parser/render-file "templates/teststatus.html"
     (add-server-root
       {:request (add-auth-info request)
-       :patient (assoc patient :negative (= status (c/import-negative-result)))})))
+       :patient (assoc patient :negative (c/negative-status? status))})))
 
 
 (defn custom-error

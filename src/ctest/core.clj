@@ -9,11 +9,11 @@
 (ns ctest.core
   (:require
     [clojure.string :as string]
-    [clojure.stacktrace :refer [print-cause-trace]]
     [clojure.java.io :as io]
     [clojure.tools.cli :as cli]
     [clojure.tools.logging :as log]
-    [ring.middleware.http-response :refer [catch-response]]
+    [ring.middleware.http-response :refer [wrap-http-response]]
+    [ring.middleware.proxy-headers :refer [wrap-forwarded-remote-addr]]
     [compojure.handler :as handler]
     [cemerick.friend :as friend]
     (cemerick.friend
@@ -55,17 +55,18 @@
       (routes/wrap-uncaught-exception-logging
         (runtime/wrap-shutdown (cond-> (routes/use-server-root server-root, (routes/shutdown-routes))
                                  ssl? (friend/requires-scheme :https)),
-          (catch-response
-            (friend/authenticate
-              (cond-> (routes/use-server-root server-root, (routes/app-routes))
-                ssl? (friend/requires-scheme :https))
-              {:allow-anon? true
-               :credential-fn authenticate
-               :default-landing-uri (c/server-location "/")
-               :login-uri (c/server-location "/login")
-               :login-failure-handler failed-login
-               :unauthorized-handler routes/unauthorized-handler
-               :workflows [(workflows/interactive-form)]})))))))
+          (wrap-forwarded-remote-addr
+            (wrap-http-response
+              (friend/authenticate
+                (cond-> (routes/use-server-root server-root, (routes/app-routes))
+                  ssl? (friend/requires-scheme :https))
+                {:allow-anon? true
+                 :credential-fn authenticate
+                 :default-landing-uri (c/server-location "/")
+                 :login-uri (c/server-location "/login")
+                 :login-failure-handler failed-login
+                 :unauthorized-handler routes/unauthorized-handler
+                 :workflows [(workflows/interactive-form)]}))))))))
 
 (def init-options
   [["-a" "--admin NAME" "Name of the admin user" :default "admin"]
@@ -86,6 +87,7 @@
         "  run              Run ctest"
         "  export db file   Export given database to the specified file."
         "  import db file   Import data from given file into the specified data base."
+        "  upgrade config   Upgrades the database specified in the configuration file to be usable with this version of CTest."
         ""
         "For informations about args use:"
         "  ctest init -h"
@@ -109,47 +111,6 @@
   (str "The following errors occurred while parsing your command:\n\n"
     (string/join \newline errors)))
 
-(defn exit [status msg]
-  (println msg)
-  (System/exit status))
-
-
-(defn db-exists?
-  [config-filename, db-filename]
-  (if (.exists (io/file db-filename))
-    true
-    (let [msg (format
-                (str
-                  "The database file \"%s\" does not exist!\n"
-                  "You have the following two options to fix that:\n"
-                  "(1) Fix the path to the existing database file in the configuration \"%s\".\n"
-                  "(2) Rerun the ctest initialisation.")
-                (-> db-filename io/file .getAbsolutePath),
-                (-> config-filename io/file .getAbsolutePath))]
-      (println msg)
-      (report/error "Startup" msg)
-      false)))
-
-
-(defn read-config
-  [config-file]
-  (try
-    ; we trust anyone with access to the config file, so just load it
-    (load-file config-file)
-    #_(read-string (slurp config-file))
-    (catch Throwable t
-      (let [log-file "startup-errors.log"]
-        (binding [log/*force* :direct]
-          (runtime/configure-logging {:log-level :info, :log-file log-file})
-          (log/errorf "Error when reading config file \"%s\":\n%s"
-            config-file
-            (with-out-str (print-cause-trace t)))
-          (exit 2
-            (format "Error when reading config file \"%s\": \"%s\"\nFor details see \"%s\"."
-              config-file
-              (.getMessage t)
-              log-file)))))))
-
 
 (defn run
   "Run ctest"
@@ -158,33 +119,24 @@
         {:keys [config-file]} options]
     ;; Handle help and error conditions
     (cond
-      (:help options) (exit 0 (run-usage summary))
-      (not (.exists (clojure.java.io/as-file config-file))) (exit 1 "Config file missing")
-      errors (exit 1 (error-msg errors)))
-    (let [{:keys [data-base-name] :as config} (read-config config-file)]
-      (c/update-config config)
-      (if-let [errors (c/check-config)]
-        (println
-          (format "The configuration file \"%s\" contains the following errors:\n  %s"
-            config-file
-            (str/join "\n  " errors)))
-        (do
-          (runtime/configure-logging config)
-          (c/update-db-name data-base-name)
-          (when (db-exists? config-file, data-base-name)
-            ; Start server (query server-config atom, since default settings might be missing in the config read from the file)
-            ; immediate backup
-            (let [backup-dir (c/backup-path)]
-              (when-not (str/blank? backup-dir)
-                (backup/perform-backup backup-dir)))
-            ; create tables if needed
-            (init/create-tables-if-needed (c/db-connection))
-            ; start server and daemons
-            (let [server (runtime/start-server (app (c/server-config)))]
-              (import/start-daemon)
-              (backup/start-backup-daemon)
-              (runtime/shutdown-on-sigterm!)
-              server)))))))
+      (:help options) (common/exit 0 (run-usage summary))
+      (not (.exists (clojure.java.io/as-file config-file))) (common/exit 1 "Config file missing")
+      errors (common/exit 1 (error-msg errors)))
+    ; no errors so far
+    (when (c/read+setup-config config-file)
+      ; Start server (query server-config atom, since default settings might be missing in the config read from the file)
+      ; immediate backup
+      (let [backup-dir (c/backup-path)]
+        (when-not (str/blank? backup-dir)
+          (backup/perform-backup backup-dir)))
+      ; create tables if needed
+      (init/create-tables-if-needed (c/db-connection))
+      ; start server and daemons
+      (let [server (runtime/start-server (app (c/server-config)))]
+        (import/start-daemon)
+        (backup/start-backup-daemon)
+        (runtime/shutdown-on-sigterm!)
+        server))))
 
 
 (defn prepare-filesystem-if-needed
@@ -203,13 +155,13 @@
   (let [{:keys [options errors summary]} (cli/parse-opts (first init-args) init-options)]
     ;; Handle help and error conditions
     (cond
-      (:help options) (exit 0 (init-usage summary))
-      errors (exit 1 (error-msg errors)))
+      (:help options) (common/exit 0 (init-usage summary))
+      errors (common/exit 1 (error-msg errors)))
     ;; Create default conf
     (when-not (.exists (clojure.java.io/as-file "ctest.conf"))
       (c/write-config-file "ctest.conf", (dissoc options :password :admin :template-file)))
     ;; create folders
-    (prepare-filesystem-if-needed (read-config "ctest.conf"))
+    (prepare-filesystem-if-needed (c/read-config "ctest.conf"))
     ;; create db
     (when (init/create-database-if-needed (:data-base-name options))
       ; database had to be created, add admin user
@@ -225,4 +177,6 @@
                (migrate/export-data-from-db-file db-filename, export-filename))
     "import" (let [[db-filename, import-filename] (rest args)]
                (migrate/import-data db-filename, import-filename))
-    (exit 1 (app-usage))))
+    "upgrade" (let [config-file (second args)]
+                (migrate/upgrade-if-needed config-file))
+    (common/exit 1 (app-usage))))

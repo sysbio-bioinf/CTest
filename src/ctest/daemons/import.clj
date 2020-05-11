@@ -16,7 +16,8 @@
             [ctest.reporting :as report]
             [ctest.db.crud :as crud]
             [clojure.java.jdbc :as jdbc]
-            [clojure.tools.logging :as log])
+            [clojure.tools.logging :as log]
+            [ctest.common :as common])
   (:import (java.io File)
            (java.nio.file WatchService)
            (java.time ZonedDateTime)))
@@ -27,8 +28,8 @@
 ;; Loading
 (defn csv-data->maps [csv-data]
   (map zipmap
-    (->> (first csv-data) ;; first row is the header
-      (map keyword) ;; drop if you want string keys instead
+    (->> (first csv-data)                                   ;; first row is the header
+      (map keyword)                                         ;; drop if you want string keys instead
       repeat)
     (rest csv-data)))
 
@@ -98,11 +99,18 @@
   (.minusDays date 1))
 
 
+(defn status->db-encoding
+  [negative-result, status]
+  (if (= status negative-result)
+    c/db-encoding-negative
+    c/db-encoding-in-progress))
+
+
 (defn update-status
   "Determine new status based on old and new status.
-  The old status gets overwritten if it is not set of if the new status is equal to negative-result."
-  [negative-result old-status, new-status]
-  (if (or (str/blank? old-status) (= new-status negative-result))
+  The old status gets overwritten if it is not set of if the new status is negative."
+  [old-status, new-status]
+  (if (or (str/blank? old-status) (c/negative-status? new-status))
     new-status
     old-status))
 
@@ -110,20 +118,32 @@
 (defn import-into-db
   [{:keys [negative-result] :as import-config}, csv-rows]
   (let [now-timestamp (t/timestamp (t/now))
-        ordernr-set (crud/read-patient-ordernr-set)
         patient-list (mapv (partial csv-row->patient import-config) csv-rows)]
-    (reduce
-      (fn [update-count, {:keys [ordernr, status] :as imported-patient}]
-        (let [updated? (when (contains? ordernr-set ordernr)
-                         (jdbc/with-db-transaction [t-conn (c/db-connection)]
-                           (let [{old-status :status :as db-patient} (crud/read-patient-by-order-number t-conn, ordernr)
-                                 new-status (update-status negative-result, old-status, status)]
-                             (when-not (= old-status new-status)
-                               (crud/update-patient t-conn, (assoc db-patient :status new-status :statusupdated now-timestamp))
-                               true))))]
-          (cond-> update-count updated? inc)))
-      0
-      patient-list)))
+    (jdbc/with-db-transaction [t-conn (c/db-connection)]
+      (let [ordernr-set (crud/read-patient-ordernr-set t-conn)
+            updated-patients (into []
+                               (comp
+                                 ; only process import entries that are in the DB
+                                 (filter #(contains? ordernr-set (:ordernr %)))
+                                 ; read patient data from DB
+                                 (map
+                                   (fn [{:keys [ordernr], new-status :status, :as import-patient}]
+                                     {:ordernr ordernr
+                                      :new-status (status->db-encoding negative-result, new-status)
+                                      :old-status (:status (crud/read-patient-by-order-number t-conn, ordernr))}))
+                                 ; update patients
+                                 (keep
+                                   (fn [{:keys [new-status, old-status, ordernr]}]
+                                     (let [updated-status (update-status old-status, new-status)]
+                                       (when-not (= old-status updated-status)
+                                         {:ordernr ordernr
+                                          :status updated-status
+                                          :statusupdated now-timestamp})))))
+                               patient-list)
+            n (count updated-patients)]
+        (when (pos? n)
+          (crud/update-patient-status t-conn, updated-patients))
+        n))))
 
 
 (defn row-map
@@ -185,11 +205,14 @@
                      (catch InterruptedException _
                        false)
                      (catch Throwable t
-                       (report/error "CSV import"
-                         "Exception in import loop: %s"
-                         (report/cause-trace t))
-                       ; continue
-                       true))]
+                       (if (common/initial-cause? InterruptedException t)
+                         false
+                         (do
+                           (report/error "CSV import"
+                             "Exception in import loop: %s"
+                             (report/cause-trace t))
+                           ; continue
+                           true))))]
         (when recur?
           (recur))))))
 
