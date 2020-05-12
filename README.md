@@ -561,6 +561,11 @@ The following queries can be performed:
 
 5. GET `/reports/system` to get information about the current memory consumption and CPU usage.
 
+We have implemented a minimalistic **[reporter-daemon](https://github.com/sysbio-bioinf/reporter-daemon)**
+to monitor CTest server instances.
+It sends email notifications when the CTest server is not reachable,
+has error reports or uses to much memory.
+
 #### Restore a backup
 
 In case something went wrong and you want to restore a backup,
