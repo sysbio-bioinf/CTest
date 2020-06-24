@@ -32,6 +32,7 @@
                 :page-title "Corona Virus Information",
                 :page-title-link "http://your.hospital.org/corona"}
      :order-numbers {:input-format "[0-9]{8,8}"
+                     :allow-tracking-number-usage? false
                      :append-date? true
                      :new-patient-hint "Order Number"
                      :new-patient-note "Note: Order Number must be an eight digit number."
@@ -369,6 +370,11 @@
 (defn order-number-date-format
   []
   (get-in @ctest-config [:order-numbers, :date-format]))
+
+
+(defn allow-tracking-number-usage?
+  []
+  (get-in @ctest-config [:order-numbers, :allow-tracking-number-usage?]))
 
 
 (defn order-numbers-config

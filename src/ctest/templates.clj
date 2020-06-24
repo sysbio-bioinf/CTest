@@ -44,7 +44,10 @@
         page-title-link (c/page-title-link)
         page-logo (c/page-logo)
         develop? (c/develop?)]
-    (cond-> (assoc m :serverRoot root, :version (v/ctest-version))
+    (cond-> (assoc m
+              :serverRoot root
+              :version (v/ctest-version)
+              :allowTrackingNumberUsage (c/allow-tracking-number-usage?))
       page-title (assoc :pageTitle page-title)
       page-title-link (assoc :pageTitleLink page-title-link)
       page-logo (assoc :pageLogo page-logo)
@@ -79,6 +82,14 @@
          :newPatientNote new-patient-note
          :orderNumberInputFormat input-format}))))
 
+
+(defn patient-creation-with-tracking-number
+  [request]
+  (parser/render-file "templates/trackingnew.html"
+    (add-server-root
+      {:request (add-auth-info request)})))
+
+
 (defn tracking-link
   [tracking-number]
   (str (c/tracking-server-domain) (c/server-location "/track/") tracking-number))
@@ -90,7 +101,15 @@
 
 (defn extract-specified-order-number
   [order-number]
-  (first (str/split order-number #"-")))
+  ; only split when :append-date? is used
+  (if (c/order-number-append-date?)
+    (let [valid-order-number? (c/valid-order-number-fn)]
+      ; only split valid order numbers (the others might be tacking numbers from :allow-tracking-number-usage? true
+      (if (valid-order-number? order-number)
+        (first (str/split order-number #"-"))
+        order-number))
+    order-number))
+
 
 (defn patient-created-info
   [request, patient]
@@ -158,6 +177,7 @@
           (add-server-root
             {:request (add-auth-info request)
              :orderNumberInputFormat (c/order-number-input-format)
+             :newPatientNote (:new-patient-note (c/order-numbers-config))
              :patient (assoc patient
                         :ordernrwithoutdate (extract-specified-order-number (:ordernr patient)))})))
       (custom-error request

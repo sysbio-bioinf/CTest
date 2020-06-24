@@ -1,3 +1,7 @@
+# Version 0.3.1
+
+* Adds (optional) tracking without order numbers (`:allow-tracking-number-usage? true`).
+
 # Version 0.3.0
 
 * Upgrade to Clojure 1.10.1.

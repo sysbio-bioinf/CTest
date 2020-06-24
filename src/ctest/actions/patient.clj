@@ -54,6 +54,13 @@
   ((c/valid-order-number-fn) ordernr))
 
 
+(defn valid-order-or-tracking-number?
+  [order-number]
+  (or
+    (valid-ordernr? order-number)
+    (and (c/allow-tracking-number-usage?) (valid-tracking-number? order-number))))
+
+
 (defn qrcode-path
   ^File [ordernr]
   (io/file (c/qrcode-path) (qrcode-file ordernr)))
@@ -91,6 +98,33 @@
     (catch Throwable t
       (report/error "Create Patient"
         "Exception during patient creation:\n%s"
+        (report/cause-trace t))
+      (templates/unhandled-exception request))))
+
+
+(defn create-patient-tracking-number-only
+  [request]
+  (try
+    (let [current-datetime (t/now)]
+       ; create new patient with tracking number (within same transaction to guarantee uniqueness)
+      (let [{:keys [trackingnr] :as patient} (jdbc/with-db-transaction [t-conn (c/db-connection)]
+                                               (let [trackingnr (create-tracking-number t-conn)
+                                                     patient-data {:ordernr trackingnr
+                                                                   :trackingnr trackingnr
+                                                                   :created (t/timestamp current-datetime)}]
+                                                 (crud/create-patient t-conn, patient-data)
+                                                 patient-data))
+            target-file (qrcode-file trackingnr)
+            fs-path (io/file (c/qrcode-path) target-file)
+            patient (assoc patient :qrcode (str target-file))]
+        ; ensure that the directory exists
+        (common/ensure-parent-directory fs-path)
+        (common/generate-qr-code-file fs-path, (templates/tracking-link trackingnr), 350)
+        (crud/update-patient (c/db-connection), patient)
+        patient))
+    (catch Throwable t
+      (report/error "Create Patient Tracking"
+        "Exception during patient tracking creation:\n%s"
         (report/cause-trace t))
       (templates/unhandled-exception request))))
 
@@ -241,8 +275,8 @@
   [request, order-number]
   (try
     (let [order-number (str/trim order-number)]
-      (if (valid-ordernr? order-number)
-        (if-let [patient (crud/read-patient-by-order-number order-number)]
+      (if (valid-order-or-tracking-number? order-number)
+        (if (crud/read-patient-by-order-number order-number)
           (response/redirect (c/server-location (str "/staff/patient/show/" order-number)))
           (templates/find-patient request
             {:type "NOTFOUND"

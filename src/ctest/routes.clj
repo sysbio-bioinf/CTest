@@ -62,7 +62,7 @@
         (response/redirect (c/server-location "/staff/patient")))))
   (core/GET "/edit/:orderNr" [orderNr, :as request]
     (let [orderNr (str/trim orderNr)]
-      (if (patient-action/valid-ordernr? orderNr)
+      (if (patient-action/valid-order-or-tracking-number? orderNr)
         (templates/edit-patient request, orderNr)
         (templates/custom-error request
           {:title "Invalid Order Number"
@@ -70,7 +70,7 @@
   (core/POST "/edit/:orderNr" [orderNr, correctedOrderNr, :as request]
     (let [orderNr (str/trim orderNr)
           correctedOrderNr (str/trim correctedOrderNr)
-          orderNr-valid? (patient-action/valid-ordernr? orderNr)
+          orderNr-valid? (patient-action/valid-order-or-tracking-number? orderNr)
           correctedOrderNr-valid? (patient-action/valid-ordernr-input? correctedOrderNr)]
       (if (and orderNr-valid? correctedOrderNr-valid?)
         (patient-action/rename-order-number request, orderNr, correctedOrderNr)
@@ -88,7 +88,14 @@
         (templates/patient-created-info request, patient)
         (templates/custom-error request
           {:title "Patient does not exist"
-           :description (format "There is no patient with order number \"%s\" in the database!" orderNr)})))))
+           :description (format "There is no patient with order number \"%s\" in the database!" orderNr)}))))
+  (core/GET "/new-tracking" request
+    (when (c/allow-tracking-number-usage?)
+      (templates/patient-creation-with-tracking-number request)))
+  (core/POST "/new-tracking" request
+    (when (c/allow-tracking-number-usage?)
+      (let [patient (patient-action/create-patient-tracking-number-only request)]
+        (response/redirect (c/server-location (str "/staff/patient/show/" (:ordernr patient))))))))
 
 
 (core/defroutes api-routes

@@ -51,6 +51,9 @@
         <ul class="nav navbar-nav nav-pills">
             {% if any request.isAdmin request.isUser %}
             <li {% block nav-new-patient %}{% endblock %}><a href="{{serverRoot}}/staff/patient">New Patient</a></li>
+                {% if allowTrackingNumberUsage %}
+                <li {% block nav-new-tracking %}{% endblock %}><a href="{{serverRoot}}/staff/patient/new-tracking">New Tracking</a></li>
+                {% endif %}
             <li {% block nav-patient-find %}{% endblock %}><a href="{{serverRoot}}/staff/patient/find">Find Patient</a></li>
             {% endif %}
 

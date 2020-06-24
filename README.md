@@ -39,7 +39,7 @@ These instructions will explain you how to setup a local CTest instance on your 
 
 Download a release version of CTest: 
 
-* [Version 0.3.0](https://github.com/sysbio-bioinf/CTest/releases/download/0.3.0/ctest-0.3.0.jar)
+* [Version 0.3.1](https://github.com/sysbio-bioinf/CTest/releases/download/0.3.1/ctest-0.3.1.jar)
 
 For testing purposes also download the [`keystore.jks`](https://github.com/sysbio-bioinf/CTest/raw/master/keystore.jks)
 or [disable SSL/https](#server-settings-for-ctest) usage.
@@ -212,6 +212,7 @@ A configuration that appends dates may look as follows:
 ``` clojure
 :order-numbers {:input-format "[0-9]{8,8}"
                 :append-date? true
+                :allow-tracking-number-usage? false
                 :new-patient-hint "Order Number"
                 :new-patient-note "Note: Order Number must be an eight digit number."
                 :find-patient-hint "XXXXXXXX-YYYYMMDD"
@@ -219,6 +220,10 @@ A configuration that appends dates may look as follows:
 ```
 Hints about valid order numbers for new patients and patient identifiers to find patients in the web front end 
 can be configured using ```new-patient-hint``` and ```new-patient-note``` as well as ```find-patient-hint``` and ```find-patient-note```.
+In a scenario without order numbers `:allow-tracking-number-usage? true` can be specified 
+to activate an additional page in the menu called `New Tracking` that allows
+the creation of patient records without an order number.
+In this case the tracking number is used as order number. 
 
 You have to specify the format of the CSV files and the location (`:path`) where CTest can find them:
 ``` clojure
