@@ -39,7 +39,7 @@ These instructions will explain you how to setup a local CTest instance on your 
 
 Download a release version of CTest: 
 
-* [Version 0.3.1](https://github.com/sysbio-bioinf/CTest/releases/download/0.3.1/ctest-0.3.1.jar)
+* [Version 0.3.2](https://github.com/sysbio-bioinf/CTest/releases/download/0.3.2/ctest-0.3.2.jar)
 
 For testing purposes also download the [`keystore.jks`](https://github.com/sysbio-bioinf/CTest/raw/master/keystore.jks)
 or [disable SSL/https](#server-settings-for-ctest) usage.
