@@ -16,7 +16,7 @@
   :main ctest.core
   :dependencies [[org.clojure/clojure "1.10.1"]
                  [compojure "1.6.1"]
-                 [com.cemerick/friend "0.2.3"]
+                 [com.cemerick/friend "0.2.1"]              ; the older 0.2.1 version is used on purpose because the 0.2.3 does not work behind two reverse proxies.
                  [ring/ring-core "1.8.1"]
                  [ring/ring-jetty-adapter "1.8.1"]
                  [ring/ring-json "0.5.0"]
@@ -24,7 +24,7 @@
                  [org.clojure/java.jdbc "0.7.11"]           ; JDBC Binding
                  [com.mchange/c3p0 "0.9.5.5"]               ; connection pool
                  [org.xerial/sqlite-jdbc "3.31.1"]          ; SQLite
-                 [selmer "1.12.23"]                         ; Templating
+                 [selmer "1.12.27"]                         ; Templating
                  [org.clojure/tools.cli "1.0.194"]
                  [metosin/ring-http-response "0.9.1"]       ; Exception handling in responses
                  [org.clojure/tools.logging "1.0.0"]        ; logging, e.g. for fail2ban usage

@@ -197,9 +197,7 @@
                                      tracking-number))}
           ; success
           {:status 200
-           :body (if (c/negative-status? (:status patient))
-                   c/db-encoding-negative
-                   c/db-encoding-in-progress)})))
+           :body (:status patient)})))
     (catch Throwable t
       (report/error "App Test Status Query"
         "Exception during app test status query:\n%s"

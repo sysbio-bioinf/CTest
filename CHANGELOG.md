@@ -1,3 +1,7 @@
+# Version 0.3.2
+
+* Adds support to import and show antibody test results (`:antibody-results? true`).
+
 # Version 0.3.1
 
 * Adds (optional) tracking without order numbers (`:allow-tracking-number-usage? true`).

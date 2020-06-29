@@ -144,10 +144,17 @@
 
 (defn test-status
   [request, {:keys [status] :as patient}]
-  (parser/render-file "templates/teststatus.html"
+  (parser/render-file (if (c/supports-antibody-results?)
+                        "templates/teststatusWithAntibodyResults.html"
+                        "templates/teststatus.html")
     (add-server-root
       {:request (add-auth-info request)
-       :patient (assoc patient :negative (c/negative-status? status))})))
+       :institute (c/institute-config)
+       :patient (cond-> (assoc patient :negative (c/negative-status? status))
+                  (c/supports-antibody-results?)
+                  (assoc
+                    :reactive (c/reactive-status? status)
+                    :nonreactive (c/non-reactive-status? status)))})))
 
 
 (defn custom-error

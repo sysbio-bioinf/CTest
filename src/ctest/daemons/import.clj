@@ -106,19 +106,38 @@
     c/db-encoding-in-progress))
 
 
+(defn status->db-encoding-with-antibody-results
+  [negative-result, reactive-result, non-reactive-result, status]
+  (cond
+    (= status negative-result)
+    c/db-encoding-negative
+
+    (= status reactive-result)
+    c/db-encoding-reactive
+
+    (= status non-reactive-result)
+    c/db-encoding-non-reactive
+
+    :else
+    c/db-encoding-in-progress))
+
+
 (defn update-status
   "Determine new status based on old and new status.
   The old status gets overwritten if it is not set of if the new status is negative."
   [old-status, new-status]
-  (if (or (str/blank? old-status) (c/negative-status? new-status))
+  (if (or (str/blank? old-status) (and (not (c/terminal-status? old-status)) (c/terminal-status? new-status)))
     new-status
     old-status))
 
 
 (defn import-into-db
-  [{:keys [negative-result] :as import-config}, csv-rows]
+  [{:keys [negative-result, antibody-results?, reactive-result, non-reactive-result] :as import-config}, csv-rows]
   (let [now-timestamp (t/timestamp (t/now))
-        patient-list (mapv (partial csv-row->patient import-config) csv-rows)]
+        patient-list (mapv (partial csv-row->patient import-config) csv-rows)
+        status->db-encoding-fn (if antibody-results?
+                                 (partial status->db-encoding-with-antibody-results negative-result, reactive-result, non-reactive-result)
+                                 (partial status->db-encoding negative-result))]
     (jdbc/with-db-transaction [t-conn (c/db-connection)]
       (let [ordernr-set (crud/read-patient-ordernr-set t-conn)
             updated-patients (into []
@@ -129,7 +148,7 @@
                                  (map
                                    (fn [{:keys [ordernr], new-status :status, :as import-patient}]
                                      {:ordernr ordernr
-                                      :new-status (status->db-encoding negative-result, new-status)
+                                      :new-status (status->db-encoding-fn new-status)
                                       :old-status (:status (crud/read-patient-by-order-number t-conn, ordernr))}))
                                  ; update patients
                                  (keep
@@ -189,10 +208,13 @@
   [watch-state]
   (loop []
     (when-not (.isInterrupted (Thread/currentThread))
-      (let [{:keys [negative-result, date-format, column-separator]} (c/import-config)
+      (let [{:keys [negative-result, antibody-results?, reactive-result, non-reactive-result, date-format, column-separator]} (c/import-config)
             import-config {:mandatory-columns (c/import-csv-columns)
                            :column-separator column-separator
                            :negative-result negative-result
+                           :antibody-results? antibody-results?
+                           :reactive-result reactive-result
+                           :non-reactive-result non-reactive-result
                            :date-id-converter (when (c/order-number-append-date?)
                                                 (create-date-id-converter date-format))}
             recur? (try

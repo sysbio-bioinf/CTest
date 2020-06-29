@@ -30,7 +30,9 @@
                 :page-logo "logo.png"
                 :patient-document-logo "logo.png"
                 :page-title "Corona Virus Information",
-                :page-title-link "http://your.hospital.org/corona"}
+                :page-title-link "http://your.hospital.org/corona"
+                :institute {:name "Clinical Chemistry"
+                            :url "http://clinchem.your.hospital.org"}}
      :order-numbers {:input-format "[0-9]{8,8}"
                      :allow-tracking-number-usage? false
                      :append-date? true
@@ -44,6 +46,9 @@
                         :date-format "dd.MM.yyyy"
                         :result-column "ergebnis"
                         :negative-result "ungr"
+                        :antibody-results? false
+                        :reactive-result "reak"
+                        :non-reactive-result "nreak"
                         :column-separator ";"}
      :backup {:path "backup"
               :start-minute 30
@@ -200,6 +205,9 @@
             order-number-column
             result-column
             negative-result
+            antibody-results?
+            reactive-result
+            non-reactive-result
             date-column
             date-format]} :import,
     {:keys [append-date?]} :order-numbers}]
@@ -225,6 +233,12 @@
 
     (str/blank? negative-result)
     (conj "You did not specify the :negative-result value for the CSV import.")
+
+    (and antibody-results? (str/blank? reactive-result))
+    (conj "You specified to support antibody results (:antibody-results? true) but did not specify the :reactive-result value for the CSV import.")
+
+    (and antibody-results? (str/blank? non-reactive-result))
+    (conj "You specified to support antibody results (:antibody-results? true) but did not specify the :non-reactive-result value for the CSV import.")
 
     (and append-date? (str/blank? date-column))
     (conj "You did specify to use order numbers with appended date but did not specify a :date-column for CSV import.")
@@ -382,6 +396,11 @@
   (:order-numbers @ctest-config))
 
 
+(defn institute-config
+  []
+  (get-in @ctest-config [:branding, :institute]))
+
+
 (defn import-config
   []
   (:import @ctest-config))
@@ -391,6 +410,9 @@
   []
   (get-in @ctest-config [:import, :negative-result]))
 
+(defn supports-antibody-results?
+  []
+  (get-in @ctest-config [:import, :antibody-results?]))
 
 (defn valid-order-number-input-fn
   []
@@ -413,16 +435,32 @@
 
 (def ^:const db-encoding-in-progress "in progress")
 (def ^:const db-encoding-negative "negative")
+(def ^:const db-encoding-reactive "reactive")
+(def ^:const db-encoding-non-reactive "non-reactive")
 
 (defn valid-status-encoding?
   [x]
-  (or
-    (= x db-encoding-negative)
-    (= x db-encoding-in-progress)))
+  (contains?
+    #{db-encoding-negative, db-encoding-reactive, db-encoding-non-reactive, db-encoding-in-progress}
+    x))
 
 (defn negative-status?
   [s]
   (= s db-encoding-negative))
+
+(defn reactive-status?
+  [s]
+  (= s db-encoding-reactive))
+
+(defn non-reactive-status?
+  [s]
+  (= s db-encoding-non-reactive))
+
+(defn terminal-status?
+  [s]
+  (contains?
+    #{db-encoding-negative, db-encoding-reactive, db-encoding-non-reactive}
+    s))
 
 
 (defn configure-logging

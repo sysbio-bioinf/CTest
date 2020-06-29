@@ -233,7 +233,10 @@ You have to specify the format of the CSV files and the location (`:path`) where
          :date-format "dd.MM.yyyy"
          :result-column "ergebnis"
          :negative-result "ungr"
-         :column-separator ";"}
+         :column-separator ";"
+         :antibody-results? false
+         :reactive-result "reak"
+         :non-reactive-result "nreak"}
 ```
 
 CTest will keep watching the specified `:path` for new csv files.
@@ -249,6 +252,9 @@ with placeholders `d` for day digit, `M` for month digit and `y` for year digit 
 
 You have to specify the correct `:column-separator` that is used in the CSV files.
 
+By setting `:antibody-results? true`, CTest is able to import and show antibody test results, as well.
+Two results are supported for antibody test: `reactive` and `non-reactive`.
+You need to specify how these two results are encoded in the result column.
 
 ### Backup
 
@@ -285,13 +291,16 @@ You can customize your instance of CTest by modifying the following parameters i
            :page-logo "logo.png"
            :patient-document-logo "pat_logo.png"
            :page-title "Corona Virus Information",
-           :page-title-link "http://your.hospital.org/corona"}
+           :page-title-link "http://your.hospital.org/corona"
+           :institute {:name "Clinical Chemistry"
+                       :url "http://clinchem.your.hospital.org"}}
 ```
 First, specify the ```path```, where your logo images are stored. 
 The parameters ```page-logo```and ```patient-document-logo``` determine the filenames of the logo 
 that is shown on top of the page and the one that is included in the patient printouts. 
 ```page title```and ```page title link``` can be used as header and link to your organization unit.
-
+When antibody results are displayed, you can configure the institute name (`:institute :name`) 
+and an url to additional information (`:institute :url`).
 
 
 ### CTest server setups with Apache as proxy

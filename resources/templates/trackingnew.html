@@ -1,0 +1,15 @@
+{% extends "templates/base.html" %}
+
+{% block nav-new-tracking %}class="active"{% endblock %}
+
+{% block content %}
+<div class="wrapper">
+		 <form class="form-signin" action="/staff/patient/new-tracking" method="post">
+			 <h2 class="form-signin-heading">New Tracking Record</h2>
+			 <div class="form-group">Create a new patient without an order number by clicking below. The generated tracking number will be used as order number.</div>
+			 <div class="form-group text-center">
+				 <button id="submit" name="submit" type="submit" class="btn btn-primary">Create</button>
+			 </div>
+		 </form>
+</div>
+{% endblock %}
